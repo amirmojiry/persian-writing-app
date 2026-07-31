@@ -1,0 +1,56 @@
+.prefix-bubble {
+  width: auto;
+  min-width: clamp(7rem, 22vw, 13rem);
+  max-width: 52%;
+  padding-inline: clamp(.8rem, 2.5vw, 1.5rem);
+  white-space: nowrap;
+  font-size: clamp(2.2rem, 7vw, 4.6rem);
+}
+
+.writing-surface.is-cumulative .canvas-reference.cumulative-reference {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-inline: 7%;
+  overflow: hidden;
+  direction: rtl;
+  white-space: nowrap;
+  line-height: 1;
+  text-align: start;
+}
+
+.completed-child-stroke {
+  stroke: #1e3a8a;
+  opacity: .78;
+}
+
+.current-child-stroke {
+  stroke: #312e81;
+  opacity: 1;
+}
+
+.cumulative-reference-sample {
+  min-width: clamp(9rem, 28vw, 17rem);
+  max-width: 42%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+}
+
+@media (max-width: 620px) {
+  .prefix-bubble {
+    max-width: 60%;
+    min-width: 6rem;
+    padding-inline: .7rem;
+    font-size: clamp(1.8rem, 9vw, 3.4rem);
+  }
+
+  .writing-surface.is-cumulative .canvas-reference.cumulative-reference {
+    padding-inline: 5%;
+  }
+
+  .cumulative-reference-sample {
+    max-width: 100%;
+  }
+}
