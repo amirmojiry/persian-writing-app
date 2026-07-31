@@ -1,13 +1,13 @@
 {
   "name": "@persian-writing/desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "tauri": "tauri",
     "build": "tauri build",
     "typecheck": "echo 'Rust checks run through cargo check in the desktop environment'",
     "lint": "echo 'Rust formatting runs through cargo fmt in the desktop environment'",
-    "test": "echo 'Milestone 1 uses the shared client and IndexedDB in the desktop WebView'"
+    "test": "echo 'The shared client and IndexedDB run unchanged in the desktop WebView'"
   },
   "devDependencies": { "@tauri-apps/cli": "^2.2.5" }
 }

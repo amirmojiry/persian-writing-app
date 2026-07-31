@@ -1,3 +1,5 @@
+export * from './contextualForms';
+
 export interface PersianLessonPackMetadata {
   readonly id: 'persian-name-mvp';
   readonly writingDirection: 'rtl';

@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { persianKeyboardRows } from '@persian-writing/lesson-persian';
+import { canonicalizePersianText, persianKeyboardRows } from '@persian-writing/lesson-persian';
 import AudioButton from './AudioButton.vue';
 import { useMessages } from '@/composables/useMessages';
 
 const props = withDefaults(defineProps<{ initialName?: string }>(), { initialName: '' });
 const emit = defineEmits<{ submit: [name: string] }>();
 const { message } = useMessages();
-const name = ref(props.initialName);
-const canContinue = computed(() => name.value.normalize('NFC').trim().length > 0);
+const name = ref(canonicalizePersianText(props.initialName));
+const normalizedName = computed(() => canonicalizePersianText(name.value).trim().replace(/\s+/gu, ' '));
+const canContinue = computed(() => normalizedName.value.length > 0);
 
 function append(value: string): void {
   if (Array.from(name.value).length < 32) {
@@ -26,7 +27,7 @@ function backspace(): void {
 
 function submit(): void {
   if (canContinue.value) {
-    emit('submit', name.value);
+    emit('submit', normalizedName.value);
   }
 }
 </script>

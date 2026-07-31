@@ -52,15 +52,24 @@ async function advanceTo(page: Page, target: string, errors: readonly string[]) 
   }
 }
 
-test('child completes a Persian name entirely in the browser', async ({ page }) => {
+async function expectContextualLetter(page: Page, display: string, form: string) {
+  const letter = page.getByTestId('contextual-letter');
+  await expect(letter).toHaveText(display);
+  await expect(letter).toHaveAttribute('data-form', form);
+}
+
+test('child completes a Persian name with contextual letter forms', async ({ page }) => {
   const errors = observeRuntimeErrors(page);
   await page.goto('/');
   await enterName(page, 'لیا', errors);
 
+  await expectContextualLetter(page, 'لـ', 'initial');
   await drawStroke(page);
   await advanceTo(page, 'حرف 2 / 3', errors);
+  await expectContextualLetter(page, 'ـیـ', 'medial');
   await drawStroke(page);
   await advanceTo(page, 'حرف 3 / 3', errors);
+  await expectContextualLetter(page, 'ـا', 'final');
   await drawStroke(page);
   await page.getByTestId('next-letter').click();
 
@@ -72,16 +81,19 @@ test('child completes a Persian name entirely in the browser', async ({ page }) 
   await expect(page.getByTestId('composition-svg').getByRole('img')).toHaveAttribute('alt', 'لیا');
 });
 
-test('refresh resumes an active IndexedDB session and its current letter', async ({ page }) => {
+test('refresh resumes an active IndexedDB session and its contextual letter', async ({ page }) => {
   const errors = observeRuntimeErrors(page);
   await page.goto('/');
   await enterName(page, 'لی', errors);
+  await expectContextualLetter(page, 'لـ', 'initial');
   await drawStroke(page);
   await advanceTo(page, 'حرف 2 / 2', errors);
+  await expectContextualLetter(page, 'ـی', 'final');
 
   await page.reload();
 
   await expect(page.getByTestId('practice-step')).toBeVisible();
   await expect(page.getByText('تمرین قبلی‌ات از همان‌جا ادامه پیدا کرد.')).toBeVisible();
   await expect(page.getByText('حرف 2 / 2')).toBeVisible();
+  await expectContextualLetter(page, 'ـی', 'final');
 });
