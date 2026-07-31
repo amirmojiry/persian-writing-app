@@ -1,56 +1,54 @@
-# نام‌نویس فارسی
+# Persian Name Writing App
 
-یک برنامه آفلاین و کودک‌پسند برای نمایش نقش حروف فارسی در نام‌ها. برنامه متن را به یونیکد منطقی نگه می‌دارد و مشخص می‌کند هر حرف در حالت جدا، آغازین، میانی یا پایانی قرار دارد.
+Offline-first application for teaching children to write their own Persian name.
 
-## نسخه وب
+## Repository
 
-GitHub Pages پس از اولین اجرای موفق workflow در این آدرس منتشر می‌شود:
+- `apps/client`: Vue 3 + TypeScript + Vite static SPA.
+- `apps/desktop`: Tauri 2 shell loading the same client.
+- `apps/api`: optional Laravel JSON API.
+- `packages/*`: framework-independent domain and shared packages.
 
-`https://amirmojiry.github.io/persian-writing-app/`
+## Requirements
 
-نسخه وب یک PWA است. فایل Vue هنگام build به‌صورت محلی داخل خروجی قرار می‌گیرد؛ بنابراین پس از اولین بارگذاری، برنامه می‌تواند بدون شبکه اجرا شود.
+- Node.js 20.19+
+- pnpm 10
+- PHP 8.3+ and Composer 2 for the optional API
+- Rust stable and Tauri prerequisites for desktop development
 
-## اجرای محلی
-
-پیش‌نیاز: Node.js 20 یا جدیدتر.
-
-```bash
-npm run dev
-```
-
-این دستور نسخه ثابت و pin‌شده Vue را دریافت می‌کند و سرور توسعه را روی پورت `1420` اجرا می‌کند.
-
-## بررسی کیفیت
-
-پیش‌نیاز typecheck: TypeScript 5.9 یا جدیدتر روی سیستم.
+## JavaScript setup
 
 ```bash
-npm run check
+corepack enable
+pnpm install
+pnpm check
+pnpm build
+pnpm test:e2e
 ```
 
-این دستور strict type checking، تست‌های رفتار حروف فارسی و build نسخه وب را اجرا می‌کند.
-
-## نسخه دسکتاپ
-
-پروژه با Tauri 2 بسته‌بندی می‌شود. برای اجرای محلی، پیش‌نیازهای Tauri و CLI آن را نصب کنید، سپس:
+Start the web client:
 
 ```bash
-npm run tauri -- dev
+pnpm dev
 ```
 
-برای ساخت روی سیستم فعلی:
+Start the desktop shell after installing Rust/Tauri prerequisites:
 
 ```bash
-npm run tauri -- build
+pnpm dev:desktop
 ```
 
-GitHub Actions فایل‌های نصب Windows، macOS و Linux را با هر نسخه جدید در بخش GitHub Releases منتشر می‌کند. جزئیات در [`docs/RELEASING.md`](docs/RELEASING.md) آمده است.
+## Laravel API setup
 
-## معماری
+```bash
+cd apps/api
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan test
+php artisan serve
+```
 
-- Vue 3 به‌صورت self-hosted و static SPA
-- JavaScript با strict TypeScript checking از طریق `checkJs`
-- Tauri 2 برای بسته دسکتاپ
-- Service Worker و Web App Manifest برای PWA آفلاین
-- منطق فارسی مستقل از Vue و Tauri در `src/domain`
-- پردازش کاملاً محلی؛ هیچ نامی به سرور ارسال نمی‌شود
+Health endpoint: `GET /api/health`.
+
+The offline child activity must never require the Laravel service.

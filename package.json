@@ -2,15 +2,19 @@
   "name": "persian-writing-app",
   "version": "0.1.0",
   "private": true,
-  "description": "Offline-first Persian name writing education app",
-  "type": "module",
-  "scripts": {
-    "dev": "node scripts/dev-server.mjs",
-    "build": "node scripts/build-web.mjs",
-    "test": "node --test tests/*.test.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
+  "packageManager": "pnpm@10.14.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @persian-writing/client dev",
+    "dev:desktop": "pnpm --filter @persian-writing/desktop tauri dev",
+    "build": "pnpm -r --if-present build",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm --filter @persian-writing/client test:e2e",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "verify:scaffold": "node scripts/verify-scaffold.mjs"
   }
 }
