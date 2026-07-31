@@ -11,7 +11,7 @@ const emit = defineEmits<{ 'update:strokes': [strokes: readonly Stroke[]] }>();
 
 const surface = ref<HTMLElement | null>(null);
 const strokes = shallowRef<Stroke[]>(cloneStrokes(props.initialStrokes));
-const activePoints = ref<StrokePoint[]>([]);
+const activePoints = shallowRef<StrokePoint[]>([]);
 const adapter = new PointerInputAdapter();
 const unsubscribers: Unsubscribe[] = [];
 
@@ -38,16 +38,17 @@ onMounted(async () => {
       return;
     }
     if (state === 'up' && activePoints.value.length > 0) {
-      strokes.value = [
-        ...strokes.value,
-        { id: createStrokeId(), points: structuredClone(activePoints.value) }
-      ];
+      const committedStroke: Stroke = {
+        id: createStrokeId(),
+        points: clonePoints(activePoints.value)
+      };
+      strokes.value = [...strokes.value, committedStroke];
       activePoints.value = [];
-      emit('update:strokes', structuredClone(strokes.value));
+      emit('update:strokes', cloneStrokes(strokes.value));
     }
   }));
   unsubscribers.push(adapter.onPoint((point) => {
-    activePoints.value = [...activePoints.value, point];
+    activePoints.value = [...activePoints.value, { ...point }];
   }));
   if (surface.value !== null) {
     await adapter.start(surface.value);
@@ -61,10 +62,14 @@ onBeforeUnmount(async () => {
   await adapter.stop();
 });
 
+function clonePoints(input: readonly StrokePoint[]): StrokePoint[] {
+  return input.map((point) => ({ ...point }));
+}
+
 function cloneStrokes(input: readonly Stroke[]): Stroke[] {
   return input.map((stroke) => ({
     id: stroke.id,
-    points: stroke.points.map((point) => ({ ...point }))
+    points: clonePoints(stroke.points)
   }));
 }
 
