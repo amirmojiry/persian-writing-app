@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import type { Stroke, WritingSession } from '@persian-writing/core';
 import AudioButton from './AudioButton.vue';
 import WritingCanvas from './WritingCanvas.vue';
@@ -11,22 +11,23 @@ const emit = defineEmits<{
   next: [strokes: readonly Stroke[]];
 }>();
 const { message } = useMessages();
-const strokes = ref<readonly Stroke[]>(structuredClone(props.session.draftStrokes));
+const strokes = shallowRef<Stroke[]>(cloneStrokes(props.session.draftStrokes));
 const showDrawHint = ref(false);
 const currentLetter = computed(() => props.session.graphemes[props.session.currentIndex] ?? '');
 
 watch(
   () => props.session.currentIndex,
   () => {
-    strokes.value = structuredClone(props.session.draftStrokes);
+    strokes.value = cloneStrokes(props.session.draftStrokes);
     showDrawHint.value = false;
   }
 );
 
 function updateStrokes(value: readonly Stroke[]): void {
-  strokes.value = value;
+  const snapshot = cloneStrokes(value);
+  strokes.value = snapshot;
   showDrawHint.value = false;
-  emit('save', value);
+  emit('save', cloneStrokes(snapshot));
 }
 
 function next(): void {
@@ -34,7 +35,14 @@ function next(): void {
     showDrawHint.value = true;
     return;
   }
-  emit('next', strokes.value);
+  emit('next', cloneStrokes(strokes.value));
+}
+
+function cloneStrokes(input: readonly Stroke[]): Stroke[] {
+  return input.map((stroke) => ({
+    id: stroke.id,
+    points: stroke.points.map((point) => ({ ...point }))
+  }));
 }
 </script>
 
