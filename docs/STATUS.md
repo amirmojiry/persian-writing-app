@@ -1,7 +1,7 @@
 # Project status
 
-Current milestone: 2 — complete
-Current application version: 0.4.0
+Current milestone: 3 — complete
+Current application version: 0.5.0
 
 ## Completed
 - Product and architecture blueprint created.
@@ -26,21 +26,27 @@ Current application version: 0.4.0
 - The sample font can be selected independently from the UI font.
 - Lesson settings are validated, stored locally and restored after refresh.
 - Settings resolution supports application defaults, administrator defaults, locked administrator values and user overrides.
+- Timed practice is optional, configurable per letter and resumes from its persisted deadline after refresh.
+- The child can undo the last stroke, clear the current letter or restart the current letter.
+- Expired timed attempts lock the canvas and present a calm retry flow rather than advancing automatically.
+- Result replay follows logical attempt order and recorded stroke durations while positioning Persian letters right to left.
+- Reduced-motion preference skips progressive replay animation and shows the completed handwriting immediately.
+- Result output is available as deterministic SVG, high-resolution PNG and PDF with the PNG embedded for stable Persian rendering.
+- Web Share API is used when supported; unsupported sharing falls back to downloading the PNG locally.
+- Milestone 3 actions include localized, child-friendly speech cues.
 
-## Milestone 2 acceptance evidence
-- `بابا` resolves to initial/final/initial/final.
-- `کتاب` resolves to initial/medial/final/isolated.
-- `ایران` resolves to isolated/initial/final/isolated/isolated.
-- `لیا` resolves to initial/medial/final.
-- Unit tests cover the complete form table, Arabic keyboard variants, spaces, ZWNJ and settings precedence.
-- Vue tests cover contextual rendering, tracing/reference modes, guideline variants and settings controls.
-- Persistence tests verify validated settings survive a new Pinia store and invalid JSON falls back safely.
-- Playwright verifies settings are applied and retained after refresh in Chromium.
+## Milestone 3 acceptance evidence
+- Core tests cover timed settings precedence, numeric limits and deterministic replay duration/order.
+- Vue tests cover timed expiry/retry, undo, clear, replay and stable export file names.
+- Persistence tests verify timed settings survive a new Pinia store and invalid JSON falls back safely.
+- Playwright completes a timed Persian name activity, exercises undo/clear/retry, replays the result and downloads SVG, PNG and PDF.
+- Playwright verifies unsupported Web Share falls back to a PNG download.
+- The composition dimensions are shared by SVG, PNG, PDF and replay instead of being recalculated independently.
 - Stored names and attempts remain NFC logical Unicode; presentation-form code points are not stored.
-- JavaScript and PHP GitHub Actions pass for version 0.4.0.
+- JavaScript and PHP GitHub Actions pass for the Milestone 3 implementation.
 
 ## Next task
-Implement Milestone 3 only: timed mode, undo/clear/retry, stroke replay, deterministic PNG/PDF output, share capability fallbacks, child-friendly audio and reduced-motion behavior.
+Implement Milestone 4 only: Tauri-native SQLite persistence, native save/print adapters, signed desktop installers, update strategy and kiosk/fullscreen behavior while keeping the web client operational.
 
 ## Decisions pending until implementation
 - Exact app/product name and final visual identity.
