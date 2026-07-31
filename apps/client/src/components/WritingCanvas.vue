@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import type { Stroke, StrokePoint, Unsubscribe } from '@persian-writing/core';
 import { PointerInputAdapter } from '@/adapters/input/PointerInputAdapter';
 
@@ -10,7 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:strokes': [strokes: readonly Stroke[]] }>();
 
 const surface = ref<HTMLElement | null>(null);
-const strokes = ref<Stroke[]>(structuredClone(props.initialStrokes));
+const strokes = shallowRef<Stroke[]>(cloneStrokes(props.initialStrokes));
 const activePoints = ref<StrokePoint[]>([]);
 const adapter = new PointerInputAdapter();
 const unsubscribers: Unsubscribe[] = [];
@@ -25,7 +25,7 @@ const visibleStrokes = computed<readonly Stroke[]>(() => {
 watch(
   () => [props.letter, props.initialStrokes] as const,
   () => {
-    strokes.value = structuredClone(props.initialStrokes);
+    strokes.value = cloneStrokes(props.initialStrokes);
     activePoints.value = [];
   },
   { deep: true }
@@ -60,6 +60,13 @@ onBeforeUnmount(async () => {
   }
   await adapter.stop();
 });
+
+function cloneStrokes(input: readonly Stroke[]): Stroke[] {
+  return input.map((stroke) => ({
+    id: stroke.id,
+    points: stroke.points.map((point) => ({ ...point }))
+  }));
+}
 
 function pathFor(stroke: Stroke): string {
   return stroke.points.map((point, index) => {
