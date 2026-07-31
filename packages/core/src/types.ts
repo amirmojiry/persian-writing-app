@@ -3,6 +3,7 @@ export type SessionStage = 'ready' | 'practice' | 'result';
 export type SessionStatus = 'active' | 'completed';
 export type StrokeSource = 'mouse' | 'pen' | 'touch' | 'camera-light';
 export type StrokeState = 'down' | 'move' | 'up';
+export type WritingLayout = 'legacy-letter-cells' | 'cumulative-name';
 
 export interface ChildProfile {
   readonly id: string;
@@ -40,6 +41,11 @@ export interface WritingSession {
   readonly profileId: string;
   readonly logicalName: string;
   readonly graphemes: readonly string[];
+  /**
+   * Sessions created before v0.5.1 omit this value and keep the legacy
+   * per-letter coordinate system so previously stored work remains readable.
+   */
+  readonly writingLayout?: WritingLayout;
   readonly stage: SessionStage;
   readonly status: SessionStatus;
   readonly currentIndex: number;

@@ -42,6 +42,7 @@ export function createWritingSession(input: CreateWritingSessionInput): WritingS
     profileId: input.profileId,
     logicalName,
     graphemes,
+    writingLayout: 'cumulative-name',
     stage: 'ready',
     status: 'active',
     currentIndex: 0,

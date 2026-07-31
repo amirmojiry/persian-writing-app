@@ -15,15 +15,16 @@ test('adult practice settings apply and survive a refresh', async ({ page }) => 
   await page.getByTestId('baseline-position').fill('80');
   await page.getByTestId('start-practice').click();
 
-  await expect(page.getByTestId('reference-sample')).toHaveText('لـ');
+  await expect(page.getByTestId('reference-sample')).toHaveAttribute('data-prefix', 'ل');
   await expect(page.getByTestId('trace-reference')).toHaveCount(0);
   await expect(page.getByTestId('writing-surface')).toHaveAttribute('data-practice-mode', 'reference');
+  await expect(page.getByTestId('writing-surface')).toHaveAttribute('data-writing-layout', 'cumulative-name');
   await expect(page.getByTestId('guideline-layer')).toHaveAttribute('data-guide-style', 'grid');
   expect(await page.locator('.guide-line').count()).toBeGreaterThan(10);
 
   await page.reload();
 
   await expect(page.getByTestId('practice-step')).toBeVisible();
-  await expect(page.getByTestId('reference-sample')).toHaveText('لـ');
+  await expect(page.getByTestId('reference-sample')).toHaveAttribute('data-prefix', 'ل');
   await expect(page.getByTestId('guideline-layer')).toHaveAttribute('data-guide-style', 'grid');
 });

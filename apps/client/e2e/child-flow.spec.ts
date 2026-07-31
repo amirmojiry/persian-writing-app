@@ -40,7 +40,7 @@ async function drawStroke(page: Page) {
   await page.mouse.down();
   await page.mouse.move(box.x + box.width - 70, box.y + box.height - 80, { steps: 8 });
   await page.mouse.up();
-  await expect(page.locator('.child-stroke')).toHaveCount(1);
+  await expect(page.locator('.current-child-stroke')).toHaveCount(1);
 }
 
 async function advanceTo(page: Page, target: string, errors: readonly string[]) {
@@ -52,24 +52,32 @@ async function advanceTo(page: Page, target: string, errors: readonly string[]) 
   }
 }
 
-async function expectContextualLetter(page: Page, display: string, form: string) {
-  const letter = page.getByTestId('contextual-letter');
-  await expect(letter).toHaveText(display);
-  await expect(letter).toHaveAttribute('data-form', form);
+async function expectPracticePrefix(
+  page: Page,
+  prefix: string,
+  currentLetter: string,
+  form: string
+) {
+  const guide = page.getByTestId('practice-prefix');
+  await expect(guide).toHaveAttribute('data-prefix', prefix);
+  await expect(guide).toHaveAttribute('data-current-letter', currentLetter);
+  await expect(guide).toHaveAttribute('data-form', form);
 }
 
-test('child completes a Persian name with contextual letter forms', async ({ page }) => {
+test('child completes a Persian name as a growing handwritten prefix', async ({ page }) => {
   const errors = observeRuntimeErrors(page);
   await page.goto('/');
   await enterName(page, 'لیا', errors);
 
-  await expectContextualLetter(page, 'لـ', 'initial');
+  await expectPracticePrefix(page, 'ل', 'لـ', 'initial');
   await drawStroke(page);
   await advanceTo(page, 'حرف 2 / 3', errors);
-  await expectContextualLetter(page, 'ـیـ', 'medial');
+  await expectPracticePrefix(page, 'لی', 'ـیـ', 'medial');
+  await expect(page.getByTestId('completed-stroke')).toHaveCount(1);
   await drawStroke(page);
   await advanceTo(page, 'حرف 3 / 3', errors);
-  await expectContextualLetter(page, 'ـا', 'final');
+  await expectPracticePrefix(page, 'لیا', 'ـا', 'final');
+  await expect(page.getByTestId('completed-stroke')).toHaveCount(2);
   await drawStroke(page);
   await page.getByTestId('next-letter').click();
 
@@ -81,19 +89,21 @@ test('child completes a Persian name with contextual letter forms', async ({ pag
   await expect(page.getByTestId('composition-svg').getByRole('img')).toHaveAttribute('alt', 'لیا');
 });
 
-test('refresh resumes an active IndexedDB session and its contextual letter', async ({ page }) => {
+test('refresh resumes an active cumulative IndexedDB session', async ({ page }) => {
   const errors = observeRuntimeErrors(page);
   await page.goto('/');
   await enterName(page, 'لی', errors);
-  await expectContextualLetter(page, 'لـ', 'initial');
+  await expectPracticePrefix(page, 'ل', 'لـ', 'initial');
   await drawStroke(page);
   await advanceTo(page, 'حرف 2 / 2', errors);
-  await expectContextualLetter(page, 'ـی', 'final');
+  await expectPracticePrefix(page, 'لی', 'ـی', 'final');
+  await expect(page.getByTestId('completed-stroke')).toHaveCount(1);
 
   await page.reload();
 
   await expect(page.getByTestId('practice-step')).toBeVisible();
   await expect(page.getByText('تمرین قبلی‌ات از همان‌جا ادامه پیدا کرد.')).toBeVisible();
   await expect(page.getByText('حرف 2 / 2')).toBeVisible();
-  await expectContextualLetter(page, 'ـی', 'final');
+  await expectPracticePrefix(page, 'لی', 'ـی', 'final');
+  await expect(page.getByTestId('completed-stroke')).toHaveCount(1);
 });

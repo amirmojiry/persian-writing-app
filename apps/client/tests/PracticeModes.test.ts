@@ -18,7 +18,7 @@ function createSession() {
 }
 
 describe('practice presentation modes', () => {
-  it('shows a trace reference inside the canvas', () => {
+  it('shows a cumulative trace reference inside the canvas', () => {
     const wrapper = mount(PracticeStep, {
       props: {
         session: createSession(),
@@ -31,11 +31,13 @@ describe('practice presentation modes', () => {
 
     expect(wrapper.find('[data-testid="trace-reference"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="reference-sample"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-prefix')).toBe('ل');
+    expect(wrapper.get('[data-testid="writing-surface"]').attributes('data-writing-layout')).toBe('cumulative-name');
     expect(wrapper.get('[data-testid="guideline-layer"]').attributes('data-guide-style')).toBe('three-line');
     expect(wrapper.findAll('.guide-line')).toHaveLength(3);
   });
 
-  it('keeps the model outside a blank grid canvas in reference mode', () => {
+  it('keeps the cumulative model outside a blank grid canvas in reference mode', () => {
     const wrapper = mount(PracticeStep, {
       props: {
         session: createSession(),
@@ -50,7 +52,7 @@ describe('practice presentation modes', () => {
       global: { plugins: [createPinia()] }
     });
 
-    expect(wrapper.get('[data-testid="reference-sample"]').text()).toBe('لـ');
+    expect(wrapper.get('[data-testid="reference-sample"]').attributes('data-prefix')).toBe('ل');
     expect(wrapper.find('[data-testid="trace-reference"]').exists()).toBe(false);
     expect(wrapper.get('[data-testid="writing-surface"]').attributes('data-practice-mode')).toBe('reference');
     expect(wrapper.findAll('.guide-line').length).toBeGreaterThan(10);

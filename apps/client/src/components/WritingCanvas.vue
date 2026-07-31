@@ -21,11 +21,17 @@ interface GuideSegment {
 const props = withDefaults(defineProps<{
   letter: string;
   initialStrokes: readonly Stroke[];
+  lockedStrokes?: readonly Stroke[];
   settings?: LessonSettings;
   disabled?: boolean;
+  cumulative?: boolean;
+  totalGraphemes?: number;
 }>(), {
+  lockedStrokes: () => [],
   settings: () => applicationLessonSettings,
-  disabled: false
+  disabled: false,
+  cumulative: false,
+  totalGraphemes: 1
 });
 const emit = defineEmits<{ 'update:strokes': [strokes: readonly Stroke[]] }>();
 
@@ -35,7 +41,7 @@ const activePoints = shallowRef<StrokePoint[]>([]);
 const adapter = new PointerInputAdapter();
 const unsubscribers: Unsubscribe[] = [];
 
-const visibleStrokes = computed<readonly Stroke[]>(() => {
+const visibleCurrentStrokes = computed<readonly Stroke[]>(() => {
   if (activePoints.value.length === 0) {
     return strokes.value;
   }
@@ -48,6 +54,15 @@ const guideSegments = computed<readonly GuideSegment[]>(() => createGuideSegment
   baselineY.value
 ));
 const sampleFontStack = computed(() => fontStackFor(props.settings.sampleFont));
+const referenceFontSize = computed(() => {
+  if (!props.cumulative) {
+    return undefined;
+  }
+  const total = Math.max(1, props.totalGraphemes);
+  const viewportSize = Math.max(10, Math.min(24, 70 / total));
+  const maximumSize = Math.max(7, Math.min(15, 52 / total));
+  return `clamp(4rem, ${viewportSize}vw, ${maximumSize}rem)`;
+});
 
 watch(
   () => [props.letter, props.initialStrokes] as const,
@@ -180,8 +195,9 @@ function createStrokeId(): string {
     ref="surface"
     class="writing-surface"
     data-testid="writing-surface"
-    :class="{ 'is-disabled': props.disabled }"
+    :class="{ 'is-disabled': props.disabled, 'is-cumulative': props.cumulative }"
     :data-practice-mode="props.settings.practiceMode"
+    :data-writing-layout="props.cumulative ? 'cumulative-name' : 'legacy-letter-cells'"
     :aria-disabled="props.disabled"
     role="application"
     :aria-label="`Writing canvas for ${letter}`"
@@ -189,8 +205,11 @@ function createStrokeId(): string {
     <div
       v-if="props.settings.practiceMode === 'trace'"
       class="canvas-reference"
+      :class="{ 'cumulative-reference': props.cumulative }"
       data-testid="trace-reference"
-      :style="{ fontFamily: sampleFontStack }"
+      :style="{ fontFamily: sampleFontStack, fontSize: referenceFontSize }"
+      dir="rtl"
+      lang="fa"
       aria-hidden="true"
     >
       {{ letter }}
@@ -219,10 +238,17 @@ function createStrokeId(): string {
         vector-effect="non-scaling-stroke"
       />
       <path
-        v-for="stroke in visibleStrokes"
+        v-for="stroke in props.lockedStrokes"
+        :key="`locked-${stroke.id}`"
+        :d="pathFor(stroke)"
+        class="child-stroke completed-child-stroke"
+        data-testid="completed-stroke"
+      />
+      <path
+        v-for="stroke in visibleCurrentStrokes"
         :key="stroke.id"
         :d="pathFor(stroke)"
-        class="child-stroke"
+        class="child-stroke current-child-stroke"
       />
     </svg>
     <div v-if="props.disabled" class="canvas-disabled-overlay" aria-hidden="true">⏳</div>
