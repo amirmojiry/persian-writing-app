@@ -25,8 +25,8 @@ if (!settings.includes('timedMode') || !settings.includes('timeLimitSeconds')) {
 }
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-if (packageJson.version !== '0.5.0') {
-  throw new Error(`Expected application version 0.5.0, received ${packageJson.version}.`);
+if (!/^0\.5\.\d+$/u.test(packageJson.version)) {
+  throw new Error(`Expected a Milestone 3 version in the 0.5.x line, received ${packageJson.version}.`);
 }
 
 const presentationForm = /[\uFB50-\uFDFF\uFE70-\uFEFF]/u;
