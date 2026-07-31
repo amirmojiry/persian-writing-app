@@ -63,7 +63,9 @@ export class BrowserResultExporter {
       height: metrics.height
     });
     const bytes = await pdf.save({ useObjectStreams: false });
-    return new Blob([bytes], { type: 'application/pdf' });
+    const copy = new Uint8Array(bytes.byteLength);
+    copy.set(bytes);
+    return new Blob([copy.buffer], { type: 'application/pdf' });
   }
 
   downloadSvg(session: WritingSession): void {
