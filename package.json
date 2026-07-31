@@ -1,6 +1,6 @@
 {
   "name": "persian-writing-app",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "engines": {
@@ -14,9 +14,10 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "test:e2e": "pnpm --filter @persian-writing/client test:e2e",
-    "check": "pnpm verify:scaffold && pnpm verify:milestone1 && pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm verify:scaffold && pnpm verify:milestone1 && pnpm verify:milestone2 && pnpm lint && pnpm typecheck && pnpm test",
     "verify:scaffold": "node scripts/verify-scaffold.mjs",
     "verify:milestone1": "node scripts/verify-milestone1.mjs",
+    "verify:milestone2": "node scripts/verify-milestone2.mjs",
     "build:desktop": "pnpm --filter @persian-writing/desktop build"
   }
 }
