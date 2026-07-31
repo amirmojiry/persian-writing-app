@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue';
 import type { Stroke, WritingSession } from '@persian-writing/core';
+import { createPersianPracticeUnits } from '@persian-writing/lesson-persian';
 import AudioButton from './AudioButton.vue';
 import WritingCanvas from './WritingCanvas.vue';
 import { useMessages } from '@/composables/useMessages';
@@ -13,7 +14,10 @@ const emit = defineEmits<{
 const { message } = useMessages();
 const strokes = shallowRef<Stroke[]>(cloneStrokes(props.session.draftStrokes));
 const showDrawHint = ref(false);
-const currentLetter = computed(() => props.session.graphemes[props.session.currentIndex] ?? '');
+const practiceUnits = computed(() => createPersianPracticeUnits(props.session.logicalName));
+const currentUnit = computed(() => practiceUnits.value[props.session.currentIndex]);
+const currentLetter = computed(() => currentUnit.value?.display ?? props.session.graphemes[props.session.currentIndex] ?? '');
+const currentForm = computed(() => currentUnit.value?.form ?? 'isolated');
 
 watch(
   () => props.session.currentIndex,
@@ -54,7 +58,15 @@ function cloneStrokes(input: readonly Stroke[]): Stroke[] {
         <p class="eyebrow">{{ message.practiceTitle }}</p>
         <h1>{{ message.practiceLetter }} {{ session.currentIndex + 1 }} / {{ session.graphemes.length }}</h1>
       </div>
-      <div class="letter-bubble" dir="rtl" lang="fa">{{ currentLetter }}</div>
+      <div
+        class="letter-bubble"
+        data-testid="contextual-letter"
+        :data-form="currentForm"
+        dir="rtl"
+        lang="fa"
+      >
+        {{ currentLetter }}
+      </div>
     </div>
     <p class="unlimited-time">∞ {{ message.unlimitedTime }}</p>
     <WritingCanvas
