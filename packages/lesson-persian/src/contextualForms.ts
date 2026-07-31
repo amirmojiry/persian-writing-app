@@ -56,7 +56,9 @@ export function getPersianContextualForm(grapheme: string): PersianContextualFor
   }
 
   if (PERSIAN_LETTER_SET.has(base)) {
-    return persianContextualForms[base as PersianLetter];
+    return canonical === base
+      ? persianContextualForms[base as PersianLetter]
+      : createForms(canonical, !NON_JOINING_TO_NEXT.has(base));
   }
 
   if (EXTRA_JOINING_LETTERS.has(base)) {
@@ -160,7 +162,7 @@ function joiningCapabilitiesFor(grapheme: string): JoiningCapabilities | null {
 }
 
 function baseLetterOf(grapheme: string): string | null {
-  const withoutMarks = grapheme.normalize('NFD').replace(/\p{M}/gu, '');
+  const withoutMarks = grapheme.replace(/\p{M}/gu, '');
   return Array.from(withoutMarks)[0] ?? null;
 }
 
