@@ -24,7 +24,11 @@ pub fn cache_export_file(
     if bytes.len() > MAX_EXPORT_BYTES {
         return Err("Export file is larger than the allowed limit.".to_string());
     }
-    let directory = app.path().app_cache_dir().map_err(error_string)?.join("exports");
+    let directory = app
+        .path()
+        .app_cache_dir()
+        .map_err(error_string)?
+        .join("exports");
     fs::create_dir_all(&directory).map_err(error_string)?;
     let destination = directory.join(safe_name);
     validate_export_path(&destination, bytes.len())?;
@@ -62,7 +66,9 @@ pub fn print_export(path: String) -> Result<(), String> {
     if status.success() {
         Ok(())
     } else {
-        Err(format!("The operating system print command exited with {status}."))
+        Err(format!(
+            "The operating system print command exited with {status}."
+        ))
     }
 }
 
@@ -135,7 +141,10 @@ mod tests {
 
     #[test]
     fn accepts_supported_simple_file_names() {
-        assert_eq!(validate_file_name("امیر-writing.pdf"), Ok("امیر-writing.pdf"));
+        assert_eq!(
+            validate_file_name("امیر-writing.pdf"),
+            Ok("امیر-writing.pdf")
+        );
         assert!(validate_file_name("../secret.pdf").is_err());
         assert!(validate_file_name("result.exe").is_err());
     }
