@@ -16,6 +16,6 @@ export interface AppMetadata {
 
 export const appMetadata: AppMetadata = Object.freeze({
   name: 'Persian Name Writing App',
-  version: '0.5.1',
+  version: '0.6.0',
   offlineFirst: true
 });
