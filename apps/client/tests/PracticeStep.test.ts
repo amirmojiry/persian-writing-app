@@ -20,7 +20,7 @@ describe('PracticeStep reactive session boundary', () => {
       global: { plugins: [createPinia()] }
     });
 
-    expect(wrapper.get('[data-testid="writing-surface"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="writing-surface"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('حرف 1 / 3');
   });
 });
