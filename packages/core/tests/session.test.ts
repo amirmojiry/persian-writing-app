@@ -3,6 +3,7 @@ import {
   completeCurrentLetter,
   createWritingSession,
   normalizeLogicalName,
+  segmentNameForPractice,
   startPractice,
   updateDraftStrokes
 } from '../src';
@@ -49,6 +50,11 @@ describe('writing session state machine', () => {
 
     expect(result.stage).toBe('result');
     expect(result.status).toBe('completed');
+  });
+
+  it('canonicalizes Arabic keyboard variants and keeps ZWNJ as a joining boundary only', () => {
+    expect(normalizeLogicalName('علي كيان')).toBe('علی کیان');
+    expect(segmentNameForPractice('می\u200Cروم')).toEqual(['م', 'ی', 'ر', 'و', 'م']);
   });
 
   it('rejects invalid transitions and empty attempts', () => {
