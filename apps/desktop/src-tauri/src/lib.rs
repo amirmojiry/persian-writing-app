@@ -36,10 +36,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let database_path = app
-                .path()
-                .app_data_dir()?
-                .join("writing-sessions.sqlite3");
+            let database_path = app.path().app_data_dir()?.join("writing-sessions.sqlite3");
             let database = Database::new(database_path).map_err(std::io::Error::other)?;
             app.manage(database);
             Ok(())
