@@ -2,6 +2,9 @@
 import { computed, ref, shallowRef, watch } from 'vue';
 import {
   applicationLessonSettings,
+  getLockedPracticeStrokes,
+  getPracticePrefix,
+  isCumulativeWritingSession,
   type LessonSettings,
   type Stroke,
   type WritingSession
@@ -31,6 +34,10 @@ const practiceUnits = computed(() => createPersianPracticeUnits(props.session.lo
 const currentUnit = computed(() => practiceUnits.value[props.session.currentIndex]);
 const currentLetter = computed(() => currentUnit.value?.display ?? props.session.graphemes[props.session.currentIndex] ?? '');
 const currentForm = computed(() => currentUnit.value?.form ?? 'isolated');
+const cumulativeLayout = computed(() => isCumulativeWritingSession(props.session));
+const practicePrefix = computed(() => getPracticePrefix(props.session));
+const practiceDisplay = computed(() => cumulativeLayout.value ? practicePrefix.value : currentLetter.value);
+const lockedStrokes = computed(() => getLockedPracticeStrokes(props.session));
 const sampleFontStack = computed(() => fontStackFor(props.settings.sampleFont));
 const timedMode = computed(() => props.settings.timedMode);
 const timeLimitSeconds = computed(() => props.settings.timeLimitSeconds);
@@ -126,13 +133,15 @@ function fontStackFor(font: LessonSettings['sampleFont']): string {
       </div>
       <div
         class="letter-bubble"
-        data-testid="contextual-letter"
+        :class="{ 'prefix-bubble': cumulativeLayout }"
+        data-testid="practice-prefix"
         :data-form="currentForm"
+        :data-current-letter="currentLetter"
         :style="{ fontFamily: sampleFontStack }"
         dir="rtl"
         lang="fa"
       >
-        {{ currentLetter }}
+        {{ practiceDisplay }}
       </div>
     </div>
 
@@ -152,20 +161,24 @@ function fontStackFor(font: LessonSettings['sampleFont']): string {
       <aside
         v-if="props.settings.practiceMode === 'reference'"
         class="reference-sample"
+        :class="{ 'cumulative-reference-sample': cumulativeLayout }"
         data-testid="reference-sample"
         :style="{ fontFamily: sampleFontStack }"
         dir="rtl"
         lang="fa"
         aria-hidden="true"
       >
-        {{ currentLetter }}
+        {{ practiceDisplay }}
       </aside>
       <WritingCanvas
         :key="session.currentIndex"
-        :letter="currentLetter"
+        :letter="practiceDisplay"
         :initial-strokes="strokes"
+        :locked-strokes="lockedStrokes"
         :settings="props.settings"
         :disabled="timer.expired.value"
+        :cumulative="cumulativeLayout"
+        :total-graphemes="session.graphemes.length"
         @update:strokes="updateStrokes"
       />
     </div>
