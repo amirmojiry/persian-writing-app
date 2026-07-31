@@ -1,7 +1,7 @@
 # Project status
 
-Current milestone: 2 — ready to start
-Current application version: 0.2.0
+Current milestone: 2 — in progress
+Current application version: 0.3.0
 
 ## Completed
 - Product and architecture blueprint created.
@@ -15,22 +15,28 @@ Current application version: 0.2.0
 - UI strings for Milestone 1 exist in Persian, English and Finnish.
 - Browser speech is isolated behind the audio cue port and is optional.
 - Static assets are precached for offline use after the first successful load.
-- GitHub Pages deployment is configured for the web client.
+- GitHub Pages publishes the production web client.
+- Persian Arabic-keyboard variants ي/ى and ك are canonicalized to logical Persian ی and ک.
+- A tested joining table now covers the 32 Persian letters and the common آ/أ/إ/ؤ/ئ variants.
+- Practice letters are classified as isolated, initial, medial or final from their actual logical neighbors.
+- Spaces and ZWNJ break joining, while ZWNJ is not presented as a practice letter.
+- The canvas reference and letter bubble display the contextual form without persisting Arabic presentation-form code points.
 
-## Milestone 1 acceptance evidence
-- Offline child flow has no Laravel or network dependency.
-- Logical NFC Unicode is stored; Arabic presentation-form code points are not persisted.
-- Session state, pointer normalization, SVG composition and repository contracts have behavior tests.
-- Playwright scenarios cover completing a Persian name and resuming after refresh from IndexedDB.
-- Static architectural checks and dependency-independent runtime checks pass locally.
-- Full Vue/Vitest/Playwright builds are required to pass in GitHub Actions.
+## Milestone 2 contextual-form acceptance evidence
+- `بابا` resolves to initial/final/initial/final.
+- `کتاب` resolves to initial/medial/final/isolated.
+- `ایران` resolves to isolated/initial/final/isolated/isolated.
+- `لیا` resolves to initial/medial/final.
+- Unit tests cover the complete form table, Arabic keyboard variants, spaces and ZWNJ.
+- Vue component tests cover initial, medial and final reference rendering.
+- Playwright verifies the contextual forms while completing and resuming a name.
+- Stored names and attempts remain NFC logical Unicode; presentation-form code points are not stored.
 
 ## Environment validation note
-- This execution environment has no package-registry access or Rust toolchain.
 - Dependency-backed Vite/Vitest/Playwright/Tauri execution runs in GitHub Actions.
 
-## Next task
-Implement Milestone 2 only: Persian normalization variants, grapheme segmentation fixtures, tested joining table, contextual forms, tracing/reference modes and configurable guidelines/font settings.
+## Next task within Milestone 2
+Implement the remaining Milestone 2 scope only: tracing/reference modes and configurable guidelines/font settings.
 
 ## Decisions pending until implementation
 - Exact app/product name and final visual identity.
