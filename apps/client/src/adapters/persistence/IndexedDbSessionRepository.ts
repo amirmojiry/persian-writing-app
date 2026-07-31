@@ -12,6 +12,8 @@ const SESSION_STORE = 'sessions';
 export class IndexedDbSessionRepository implements SessionRepository {
   private databasePromise: Promise<IDBDatabase> | null = null;
 
+  constructor(private readonly databaseName = DATABASE_NAME) {}
+
   async saveProfile(profile: ChildProfile): Promise<void> {
     const database = await this.database();
     await transactionDone(database, PROFILE_STORE, 'readwrite', (store) => store.put(profile));
@@ -49,14 +51,14 @@ export class IndexedDbSessionRepository implements SessionRepository {
   }
 
   private database(): Promise<IDBDatabase> {
-    this.databasePromise ??= openDatabase();
+    this.databasePromise ??= openDatabase(this.databaseName);
     return this.databasePromise;
   }
 }
 
-function openDatabase(): Promise<IDBDatabase> {
+function openDatabase(databaseName: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+    const request = indexedDB.open(databaseName, DATABASE_VERSION);
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(PROFILE_STORE)) {
