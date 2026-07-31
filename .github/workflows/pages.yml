@@ -1,46 +1,61 @@
-name: GitHub Pages
+name: Publish GitHub Pages
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - index.html
+      - assets/**
+      - icon.svg
+      - manifest.webmanifest
+      - sw.js
+      - .nojekyll
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: pages-source
   cancel-in-progress: true
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10.14.0
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - run: pnpm install --frozen-lockfile=false
-      - run: pnpm --filter @persian-writing/client build
+
+      - name: Build the web app
+        run: pnpm --filter @persian-writing/client build
         env:
           VITE_BASE_PATH: /persian-writing-app/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: apps/client/dist
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish the built app to the current Pages source
+        shell: bash
+        run: |
+          rm -rf assets
+          rm -f index.html icon.svg manifest.webmanifest sw.js .nojekyll
+          cp -R apps/client/dist/. .
+          touch .nojekyll
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- index.html assets icon.svg manifest.webmanifest sw.js .nojekyll
+
+          if git diff --cached --quiet; then
+            echo "The published app is already current."
+            exit 0
+          fi
+
+          git commit -m "Deploy web app to GitHub Pages [skip ci]"
+          git push origin HEAD:main
