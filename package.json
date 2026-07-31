@@ -1,6 +1,6 @@
 {
   "name": "persian-writing-app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "engines": {
@@ -9,12 +9,14 @@
   "scripts": {
     "dev": "pnpm --filter @persian-writing/client dev",
     "dev:desktop": "pnpm --filter @persian-writing/desktop tauri dev",
-    "build": "pnpm -r --if-present build",
+    "build": "pnpm --filter @persian-writing/contracts build && pnpm --filter @persian-writing/core build && pnpm --filter @persian-writing/i18n build && pnpm --filter @persian-writing/lesson-persian build && pnpm --filter @persian-writing/test-fixtures build && pnpm --filter @persian-writing/ui build && pnpm --filter @persian-writing/client build",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "test:e2e": "pnpm --filter @persian-writing/client test:e2e",
-    "check": "pnpm lint && pnpm typecheck && pnpm test",
-    "verify:scaffold": "node scripts/verify-scaffold.mjs"
+    "check": "pnpm verify:scaffold && pnpm verify:milestone1 && pnpm lint && pnpm typecheck && pnpm test",
+    "verify:scaffold": "node scripts/verify-scaffold.mjs",
+    "verify:milestone1": "node scripts/verify-milestone1.mjs",
+    "build:desktop": "pnpm --filter @persian-writing/desktop build"
   }
 }

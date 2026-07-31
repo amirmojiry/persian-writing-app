@@ -1,3 +1,10 @@
+export * from './composition';
+export * from './ports';
+export * from './repositories';
+export * from './session';
+export * from './strokes';
+export * from './types';
+
 export interface AppMetadata {
   readonly name: string;
   readonly version: string;
@@ -6,6 +13,6 @@ export interface AppMetadata {
 
 export const appMetadata: AppMetadata = Object.freeze({
   name: 'Persian Name Writing App',
-  version: '0.1.0',
+  version: '0.2.0',
   offlineFirst: true
 });
