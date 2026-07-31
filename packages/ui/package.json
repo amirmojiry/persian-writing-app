@@ -1,18 +1,14 @@
 {
   "name": "@persian-writing/ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "exports": {
-    "./SmokeCard.vue": "./src/SmokeCard.vue"
-  },
-  "peerDependencies": {
-    "vue": "^3.5.0"
-  },
+  "exports": { "./SmokeCard.vue": "./src/SmokeCard.vue" },
+  "peerDependencies": { "vue": "^3.5.0" },
   "scripts": {
     "lint": "echo 'UI lint runs from the client ESLint configuration'",
     "typecheck": "echo 'UI typecheck runs from the client vue-tsc project'",
-    "test": "echo 'No standalone UI behavior in Milestone 0'",
+    "test": "echo 'UI behavior is covered by client component tests'",
     "build": "echo 'UI components are bundled by the client'"
   }
 }

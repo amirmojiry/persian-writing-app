@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import SmokeView from '@/views/SmokeView.vue';
+import ChildFlowView from '@/views/ChildFlowView.vue';
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +7,7 @@ export default createRouter({
     {
       path: '/',
       name: 'home',
-      component: SmokeView
+      component: ChildFlowView
     }
   ]
 });

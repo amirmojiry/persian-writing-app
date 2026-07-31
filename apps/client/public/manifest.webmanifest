@@ -1,0 +1,13 @@
+{
+  "name": "نام‌نویس فارسی",
+  "short_name": "نام‌نویس",
+  "description": "تمرین آفلاین نوشتن نام فارسی برای کودکان",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef2ff",
+  "theme_color": "#4f46e5",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

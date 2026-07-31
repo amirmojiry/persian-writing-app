@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/writing-session.json",
+  "title": "WritingSession",
+  "type": "object",
+  "required": ["id", "profileId", "logicalName", "graphemes", "stage", "status", "currentIndex", "attempts", "draftStrokes", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "profileId": { "type": "string", "minLength": 1 },
+    "logicalName": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "graphemes": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "stage": { "enum": ["ready", "practice", "result"] },
+    "status": { "enum": ["active", "completed"] },
+    "currentIndex": { "type": "integer", "minimum": 0 },
+    "attempts": { "type": "array", "items": { "$ref": "#/$defs/letterAttempt" } },
+    "draftStrokes": { "type": "array", "items": { "$ref": "#/$defs/stroke" } },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "letterAttempt": { "type": "object", "required": ["index", "grapheme", "strokes", "completedAt"], "properties": { "index": { "type": "integer", "minimum": 0 }, "grapheme": { "type": "string", "minLength": 1 }, "strokes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/stroke" } }, "completedAt": { "type": "string", "format": "date-time" } }, "additionalProperties": false },
+    "stroke": { "type": "object", "required": ["id", "points"], "properties": { "id": { "type": "string", "minLength": 1 }, "points": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/strokePoint" } } }, "additionalProperties": false },
+    "strokePoint": { "type": "object", "required": ["x", "y", "t", "source"], "properties": { "x": { "type": "number", "minimum": 0, "maximum": 1 }, "y": { "type": "number", "minimum": 0, "maximum": 1 }, "t": { "type": "number", "minimum": 0 }, "source": { "enum": ["mouse", "pen", "touch", "camera-light"] }, "pressure": { "type": "number", "minimum": 0, "maximum": 1 }, "tiltX": { "type": "number" }, "tiltY": { "type": "number" } }, "additionalProperties": false }
+  },
+  "additionalProperties": false
+}

@@ -1,11 +1,11 @@
 {
   "name": "@persian-writing/client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 1420",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && node scripts/generate-service-worker.mjs",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "vue-tsc -b --pretty false",
@@ -18,7 +18,8 @@
     "@persian-writing/ui": "workspace:*",
     "pinia": "^2.3.1",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "@persian-writing/lesson-persian": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
