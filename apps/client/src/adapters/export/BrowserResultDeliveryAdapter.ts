@@ -12,7 +12,7 @@ export class BrowserResultDeliveryAdapter implements ResultDeliveryPort {
     return 'saved';
   }
 
-  async print(_file: ResultFile): Promise<FileDeliveryOutcome> {
+  async print(): Promise<FileDeliveryOutcome> {
     window.print();
     return 'printed';
   }
