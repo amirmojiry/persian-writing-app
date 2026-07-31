@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { createCompositionSvg, createWritingSession, startPractice, completeCurrentLetter } from '../src';
 
 const stroke = [{ id: 's', points: [

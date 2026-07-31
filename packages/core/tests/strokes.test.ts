@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { normalizePointerSample } from '../src';
 
 describe('pointer normalization', () => {
