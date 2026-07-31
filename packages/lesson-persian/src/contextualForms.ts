@@ -31,6 +31,7 @@ interface JoiningCapabilities {
 const TATWEEL = 'ـ';
 const ZERO_WIDTH_NON_JOINER = '\u200C';
 const ZERO_WIDTH_JOINER = '\u200D';
+const JOIN_CONTROL_PATTERN = /([\u200C\u200D])/u;
 const NON_JOINING_TO_NEXT = new Set<string>(['ا', 'آ', 'أ', 'إ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'و', 'ؤ']);
 const EXTRA_JOINING_LETTERS = new Set<string>(['آ', 'أ', 'إ', 'ؤ', 'ئ']);
 const PERSIAN_LETTER_SET = new Set<string>(PERSIAN_ALPHABET);
@@ -109,9 +110,11 @@ export function createPersianPracticeUnits(input: string): readonly PersianPract
 
 export function segmentPersianText(input: string): readonly string[] {
   const normalized = canonicalizePersianText(input);
-  return typeof Intl.Segmenter === 'function'
+  const graphemes = typeof Intl.Segmenter === 'function'
     ? Array.from(new Intl.Segmenter('fa', { granularity: 'grapheme' }).segment(normalized), ({ segment }) => segment)
     : Array.from(normalized);
+
+  return graphemes.flatMap((grapheme) => grapheme.split(JOIN_CONTROL_PATTERN).filter(Boolean));
 }
 
 function createForms(grapheme: string, canJoinNext: boolean): PersianContextualForms {
