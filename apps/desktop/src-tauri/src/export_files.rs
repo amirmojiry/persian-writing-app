@@ -38,19 +38,20 @@ pub fn print_export(path: String) -> Result<(), String> {
     validate_print_path(&source)?;
 
     #[cfg(target_os = "windows")]
-    let status = Command::new("powershell.exe")
-        .args([
-            "-NoProfile",
-            "-NonInteractive",
-            "-Command",
-            "Start-Process",
-            "-FilePath",
-            &source.to_string_lossy(),
-            "-Verb",
-            "Print",
-        ])
-        .status()
-        .map_err(error_string)?;
+    let status = {
+        let source_string = source.to_string_lossy().into_owned();
+        Command::new("powershell.exe")
+            .arg("-NoProfile")
+            .arg("-NonInteractive")
+            .arg("-Command")
+            .arg("Start-Process")
+            .arg("-FilePath")
+            .arg(source_string)
+            .arg("-Verb")
+            .arg("Print")
+            .status()
+            .map_err(error_string)?
+    };
 
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     let status = Command::new("lp")
@@ -106,7 +107,8 @@ fn validate_file_name(file_name: &str) -> Result<&str, String> {
     let path = Path::new(file_name);
     if file_name.is_empty()
         || path.file_name().and_then(|value| value.to_str()) != Some(file_name)
-        || file_name.contains(['/', '\\'])
+        || file_name.contains('/')
+        || file_name.contains('\\')
     {
         return Err("Export file name is invalid.".to_string());
     }
