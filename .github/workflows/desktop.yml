@@ -6,7 +6,6 @@ on:
       - 'apps/desktop/**'
       - 'apps/client/**'
       - 'packages/core/**'
-      - 'pnpm-lock.yaml'
       - 'package.json'
       - '.github/workflows/desktop.yml'
   workflow_dispatch:
@@ -29,7 +28,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -75,7 +73,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
