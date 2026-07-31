@@ -3,8 +3,9 @@ import { readFile } from 'node:fs/promises';
 const required = new Map([
   ['packages/core/src/replay.ts', ['createReplayPlan', 'totalDurationMs']],
   ['apps/client/src/composables/usePracticeTimer.ts', ['persian-writing-timer-v1', 'remainingSeconds']],
+  ['apps/client/src/composables/useReducedMotion.ts', ['prefers-reduced-motion']],
   ['apps/client/src/components/PracticeStep.vue', ['undo-stroke', 'clear-letter', 'retry-letter', 'timer-panel']],
-  ['apps/client/src/components/ResultReplay.vue', ['stroke-replay', 'prefers-reduced-motion']],
+  ['apps/client/src/components/ResultReplay.vue', ['stroke-replay', 'segmentProgress']],
   ['apps/client/src/adapters/export/BrowserResultExporter.ts', ['createPngBlob', 'createPdfBlob', 'navigator.share']],
   ['apps/client/src/components/ResultStep.vue', ['download-png', 'download-pdf', 'share-result', 'replay-result']]
 ]);
