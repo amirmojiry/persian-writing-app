@@ -6,6 +6,7 @@ import './assets/main.css';
 import './assets/practice-settings.css';
 import './assets/milestone3.css';
 import './assets/cumulative-writing.css';
+import './assets/desktop.css';
 
 createApp(App).use(createPinia()).use(router).mount('#app');
 
