@@ -9,6 +9,8 @@ export interface LessonSettings {
   readonly guidelineThickness: number;
   readonly baselinePosition: number;
   readonly sampleFont: SampleFont;
+  readonly timedMode: boolean;
+  readonly timeLimitSeconds: number;
 }
 
 type MutableLessonSettings = {
@@ -28,7 +30,9 @@ export const applicationLessonSettings: LessonSettings = Object.freeze({
   guidelineOpacity: 0.28,
   guidelineThickness: 3,
   baselinePosition: 0.72,
-  sampleFont: 'persian-sans'
+  sampleFont: 'persian-sans',
+  timedMode: false,
+  timeLimitSeconds: 30
 });
 
 const PRACTICE_MODES = new Set<PracticeMode>(['trace', 'reference']);
@@ -56,7 +60,9 @@ export function resolveLessonSettings(input: ResolveLessonSettingsInput = {}): L
     guidelineOpacity: valueFor('guidelineOpacity'),
     guidelineThickness: valueFor('guidelineThickness'),
     baselinePosition: valueFor('baselinePosition'),
-    sampleFont: valueFor('sampleFont')
+    sampleFont: valueFor('sampleFont'),
+    timedMode: valueFor('timedMode'),
+    timeLimitSeconds: valueFor('timeLimitSeconds')
   });
 }
 
@@ -85,6 +91,12 @@ export function sanitizeLessonSettings(input: unknown): Partial<LessonSettings> 
   }
   if (typeof source.sampleFont === 'string' && SAMPLE_FONTS.has(source.sampleFont as SampleFont)) {
     result.sampleFont = source.sampleFont as SampleFont;
+  }
+  if (typeof source.timedMode === 'boolean') {
+    result.timedMode = source.timedMode;
+  }
+  if (typeof source.timeLimitSeconds === 'number' && Number.isFinite(source.timeLimitSeconds)) {
+    result.timeLimitSeconds = Math.round(clamp(source.timeLimitSeconds, 5, 300));
   }
 
   return result;
