@@ -11,6 +11,10 @@ export interface LessonSettings {
   readonly sampleFont: SampleFont;
 }
 
+type MutableLessonSettings = {
+  -readonly [K in keyof LessonSettings]: LessonSettings[K];
+};
+
 export interface ResolveLessonSettingsInput {
   readonly applicationDefaults?: Partial<LessonSettings>;
   readonly administratorDefaults?: Partial<LessonSettings>;
@@ -62,7 +66,7 @@ export function sanitizeLessonSettings(input: unknown): Partial<LessonSettings> 
   }
 
   const source = input as Record<string, unknown>;
-  const result: Partial<LessonSettings> = {};
+  const result: Partial<MutableLessonSettings> = {};
 
   if (typeof source.practiceMode === 'string' && PRACTICE_MODES.has(source.practiceMode as PracticeMode)) {
     result.practiceMode = source.practiceMode as PracticeMode;
