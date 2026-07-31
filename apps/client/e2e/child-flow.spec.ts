@@ -1,9 +1,22 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-async function enterName(page: import('@playwright/test').Page, name: string) {
-  const runtimeErrors: string[] = [];
-  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+function observeRuntimeErrors(page: Page): string[] {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') {
+      errors.push(`console: ${message.text()}`);
+    }
+  });
+  return errors;
+}
 
+async function pageDiagnostic(page: Page, errors: readonly string[]): Promise<string> {
+  const pageText = await page.locator('body').innerText();
+  return `Runtime errors: ${errors.join(' | ') || 'none'}. Page: ${pageText}`;
+}
+
+async function enterName(page: Page, name: string, errors: readonly string[]) {
   await page.getByTestId('wizard-check').click();
   await page.getByTestId('name-input').fill(name);
   await page.getByTestId('confirm-name').click();
@@ -13,12 +26,11 @@ async function enterName(page: import('@playwright/test').Page, name: string) {
   try {
     await expect(page.getByTestId('practice-step')).toBeVisible({ timeout: 8_000 });
   } catch {
-    const pageText = await page.locator('body').innerText();
-    throw new Error(`Practice did not open. Runtime errors: ${runtimeErrors.join(' | ') || 'none'}. Page: ${pageText}`);
+    throw new Error(`Practice did not open. ${await pageDiagnostic(page, errors)}`);
   }
 }
 
-async function drawStroke(page: import('@playwright/test').Page) {
+async function drawStroke(page: Page) {
   const canvas = page.getByTestId('writing-surface');
   const box = await canvas.boundingBox();
   if (box === null) {
@@ -28,27 +40,44 @@ async function drawStroke(page: import('@playwright/test').Page) {
   await page.mouse.down();
   await page.mouse.move(box.x + box.width - 70, box.y + box.height - 80, { steps: 8 });
   await page.mouse.up();
+  await expect(page.locator('.child-stroke')).toHaveCount(1);
+}
+
+async function advanceTo(page: Page, target: string, errors: readonly string[]) {
+  await page.getByTestId('next-letter').click();
+  try {
+    await expect(page.getByText(target, { exact: true })).toBeVisible({ timeout: 8_000 });
+  } catch {
+    throw new Error(`Letter transition to ${target} failed. ${await pageDiagnostic(page, errors)}`);
+  }
 }
 
 test('child completes a Persian name entirely in the browser', async ({ page }) => {
+  const errors = observeRuntimeErrors(page);
   await page.goto('/');
-  await enterName(page, 'لیا');
+  await enterName(page, 'لیا', errors);
 
-  for (let index = 0; index < 3; index += 1) {
-    await drawStroke(page);
-    await page.getByTestId('next-letter').click();
+  await drawStroke(page);
+  await advanceTo(page, 'حرف 2 / 3', errors);
+  await drawStroke(page);
+  await advanceTo(page, 'حرف 3 / 3', errors);
+  await drawStroke(page);
+  await page.getByTestId('next-letter').click();
+
+  try {
+    await expect(page.getByTestId('result-step')).toBeVisible({ timeout: 8_000 });
+  } catch {
+    throw new Error(`Result did not open. ${await pageDiagnostic(page, errors)}`);
   }
-
-  await expect(page.getByTestId('result-step')).toBeVisible();
   await expect(page.getByTestId('composition-svg').getByRole('img')).toHaveAttribute('alt', 'لیا');
 });
 
 test('refresh resumes an active IndexedDB session and its current letter', async ({ page }) => {
+  const errors = observeRuntimeErrors(page);
   await page.goto('/');
-  await enterName(page, 'لی');
+  await enterName(page, 'لی', errors);
   await drawStroke(page);
-  await page.getByTestId('next-letter').click();
-  await expect(page.getByText('حرف 2 / 2')).toBeVisible();
+  await advanceTo(page, 'حرف 2 / 2', errors);
 
   await page.reload();
 
