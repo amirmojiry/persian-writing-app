@@ -38,8 +38,7 @@ pub fn run() {
         .setup(|app| {
             let database_path = app
                 .path()
-                .app_data_dir()
-                .map_err(|error| error.to_string())?
+                .app_data_dir()?
                 .join("writing-sessions.sqlite3");
             let database = Database::new(database_path).map_err(std::io::Error::other)?;
             app.manage(database);
