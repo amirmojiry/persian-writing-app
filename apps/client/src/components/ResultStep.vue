@@ -7,7 +7,10 @@ import { useMessages } from '@/composables/useMessages';
 const props = defineProps<{ session: WritingSession }>();
 const emit = defineEmits<{ restart: [] }>();
 const { message } = useMessages();
-const svg = computed(() => createCompositionSvg(props.session));
+const compositionUrl = computed(() => {
+  const svg = createCompositionSvg(props.session);
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+});
 
 function printResult(): void {
   window.print();
@@ -20,7 +23,9 @@ function printResult(): void {
     <div class="celebration" aria-hidden="true">🎉</div>
     <h1>{{ message.resultTitle }}</h1>
     <p class="step-copy">{{ message.resultBody }}</p>
-    <div class="composition-preview" data-testid="composition-svg" v-html="svg" />
+    <div class="composition-preview" data-testid="composition-svg">
+      <img :src="compositionUrl" :alt="session.logicalName" style="display:block;width:100%;height:auto" />
+    </div>
     <div class="result-actions">
       <button type="button" class="primary-button" data-testid="print-result" @click="printResult">
         {{ message.print }}
