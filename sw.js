@@ -1,7 +1,7 @@
-const CACHE_NAME = 'persian-writing-app-v0.5.0';
+const CACHE_NAME = 'persian-writing-app-v0.5.1';
 const PRECACHE = [
-  "./assets/index-BQ4PnPag.css",
-  "./assets/index-Dr0FdqqS.js",
+  "./assets/index-B_GY-2VP.css",
+  "./assets/index-U14NMRQL.js",
   "./icon.svg",
   "./index.html",
   "./manifest.webmanifest"
