@@ -6,7 +6,8 @@ const required = new Map([
   ['apps/client/src/composables/useReducedMotion.ts', ['prefers-reduced-motion']],
   ['apps/client/src/components/PracticeStep.vue', ['undo-stroke', 'clear-letter', 'retry-letter', 'timer-panel']],
   ['apps/client/src/components/ResultReplay.vue', ['stroke-replay', 'segmentProgress']],
-  ['apps/client/src/adapters/export/BrowserResultExporter.ts', ['createPngBlob', 'createPdfBlob', 'navigator.share']],
+  ['apps/client/src/adapters/export/BrowserResultExporter.ts', ['createPngBlob', 'createPdfBlob', 'createFile']],
+  ['apps/client/src/adapters/export/BrowserResultDeliveryAdapter.ts', ['navigator.share', 'downloadFile']],
   ['apps/client/src/components/ResultStep.vue', ['download-png', 'download-pdf', 'share-result', 'replay-result']]
 ]);
 
@@ -25,8 +26,9 @@ if (!settings.includes('timedMode') || !settings.includes('timeLimitSeconds')) {
 }
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-if (!/^0\.5\.\d+$/u.test(packageJson.version)) {
-  throw new Error(`Expected a Milestone 3 version in the 0.5.x line, received ${packageJson.version}.`);
+const [major, minor] = packageJson.version.split('.').map(Number);
+if (major !== 0 || minor < 5) {
+  throw new Error(`Expected Milestone 3 capabilities in version 0.5.0 or newer, received ${packageJson.version}.`);
 }
 
 const presentationForm = /[\uFB50-\uFDFF\uFE70-\uFEFF]/u;
