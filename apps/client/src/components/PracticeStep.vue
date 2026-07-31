@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue';
-import type { Stroke, WritingSession } from '@persian-writing/core';
+import {
+  applicationLessonSettings,
+  type LessonSettings,
+  type Stroke,
+  type WritingSession
+} from '@persian-writing/core';
 import { createPersianPracticeUnits } from '@persian-writing/lesson-persian';
 import AudioButton from './AudioButton.vue';
 import WritingCanvas from './WritingCanvas.vue';
 import { useMessages } from '@/composables/useMessages';
 
-const props = defineProps<{ session: WritingSession }>();
+const props = withDefaults(defineProps<{
+  session: WritingSession;
+  settings?: LessonSettings;
+}>(), {
+  settings: () => applicationLessonSettings
+});
 const emit = defineEmits<{
   save: [strokes: readonly Stroke[]];
   next: [strokes: readonly Stroke[]];
@@ -18,6 +28,7 @@ const practiceUnits = computed(() => createPersianPracticeUnits(props.session.lo
 const currentUnit = computed(() => practiceUnits.value[props.session.currentIndex]);
 const currentLetter = computed(() => currentUnit.value?.display ?? props.session.graphemes[props.session.currentIndex] ?? '');
 const currentForm = computed(() => currentUnit.value?.form ?? 'isolated');
+const sampleFontStack = computed(() => fontStackFor(props.settings.sampleFont));
 
 watch(
   () => props.session.currentIndex,
@@ -48,6 +59,16 @@ function cloneStrokes(input: readonly Stroke[]): Stroke[] {
     points: stroke.points.map((point) => ({ ...point }))
   }));
 }
+
+function fontStackFor(font: LessonSettings['sampleFont']): string {
+  if (font === 'system-serif') {
+    return 'Noto Naskh Arabic, Geeza Pro, Times New Roman, serif';
+  }
+  if (font === 'system-sans') {
+    return 'Tahoma, Arial, sans-serif';
+  }
+  return 'Vazirmatn, Tahoma, Arial, sans-serif';
+}
 </script>
 
 <template>
@@ -62,6 +83,7 @@ function cloneStrokes(input: readonly Stroke[]): Stroke[] {
         class="letter-bubble"
         data-testid="contextual-letter"
         :data-form="currentForm"
+        :style="{ fontFamily: sampleFontStack }"
         dir="rtl"
         lang="fa"
       >
@@ -69,12 +91,26 @@ function cloneStrokes(input: readonly Stroke[]): Stroke[] {
       </div>
     </div>
     <p class="unlimited-time">∞ {{ message.unlimitedTime }}</p>
-    <WritingCanvas
-      :key="session.currentIndex"
-      :letter="currentLetter"
-      :initial-strokes="session.draftStrokes"
-      @update:strokes="updateStrokes"
-    />
+    <div class="practice-workspace" :data-mode="props.settings.practiceMode">
+      <aside
+        v-if="props.settings.practiceMode === 'reference'"
+        class="reference-sample"
+        data-testid="reference-sample"
+        :style="{ fontFamily: sampleFontStack }"
+        dir="rtl"
+        lang="fa"
+        aria-hidden="true"
+      >
+        {{ currentLetter }}
+      </aside>
+      <WritingCanvas
+        :key="session.currentIndex"
+        :letter="currentLetter"
+        :initial-strokes="session.draftStrokes"
+        :settings="props.settings"
+        @update:strokes="updateStrokes"
+      />
+    </div>
     <p v-if="showDrawHint" class="validation-message" role="alert">{{ message.drawFirst }}</p>
     <button type="button" class="primary-button" data-testid="next-letter" @click="next">
       {{ message.next }}
