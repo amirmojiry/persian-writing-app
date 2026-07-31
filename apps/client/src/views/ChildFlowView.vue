@@ -55,10 +55,16 @@ onBeforeUnmount(() => {
       :initial-name="previousName"
       @submit="store.submitName"
     />
-    <ReadyStep v-else-if="store.screen === 'ready'" @start="store.beginPractice" />
+    <ReadyStep
+      v-else-if="store.screen === 'ready'"
+      :settings="store.lessonSettings"
+      @settings-change="store.updateLessonSettings"
+      @start="store.beginPractice"
+    />
     <PracticeStep
       v-else-if="store.screen === 'practice' && store.session"
       :session="store.session"
+      :settings="store.lessonSettings"
       @save="store.saveDraft"
       @next="store.completeLetter"
     />

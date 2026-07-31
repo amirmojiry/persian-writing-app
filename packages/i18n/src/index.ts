@@ -17,6 +17,25 @@ export interface MessageCatalog {
   readonly readyTitle: string;
   readonly readyBody: string;
   readonly readyStart: string;
+  readonly settingsTitle: string;
+  readonly settingsHint: string;
+  readonly practiceModeLabel: string;
+  readonly traceMode: string;
+  readonly traceModeHint: string;
+  readonly referenceMode: string;
+  readonly referenceModeHint: string;
+  readonly guidelineStyleLabel: string;
+  readonly guidelineNone: string;
+  readonly guidelineBaseline: string;
+  readonly guidelineThreeLine: string;
+  readonly guidelineGrid: string;
+  readonly guidelineOpacityLabel: string;
+  readonly guidelineThicknessLabel: string;
+  readonly baselinePositionLabel: string;
+  readonly sampleFontLabel: string;
+  readonly fontPersianSans: string;
+  readonly fontSystemSans: string;
+  readonly fontSystemSerif: string;
   readonly practiceTitle: string;
   readonly practiceLetter: string;
   readonly unlimitedTime: string;
@@ -49,6 +68,25 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     readyTitle: 'آماده‌ای؟',
     readyBody: 'حالا هر حرف اسمت را با انگشت، قلم یا ماوس می‌نویسیم.',
     readyStart: 'شروع کنیم',
+    settingsTitle: 'تنظیم تمرین',
+    settingsHint: 'بزرگسال می‌تواند شکل راهنما را پیش از شروع انتخاب کند.',
+    practiceModeLabel: 'نوع تمرین',
+    traceMode: 'ردگیری روی الگو',
+    traceModeHint: 'حرف کم‌رنگ داخل بوم نمایش داده می‌شود.',
+    referenceMode: 'نمونه کنار بوم',
+    referenceModeHint: 'حرف نمونه جدا از فضای نوشتن دیده می‌شود.',
+    guidelineStyleLabel: 'نوع خطوط راهنما',
+    guidelineNone: 'بدون خط',
+    guidelineBaseline: 'فقط خط پایه',
+    guidelineThreeLine: 'سه خط نوشتاری',
+    guidelineGrid: 'شبکه',
+    guidelineOpacityLabel: 'شفافیت خطوط',
+    guidelineThicknessLabel: 'ضخامت خطوط',
+    baselinePositionLabel: 'جای خط پایه',
+    sampleFontLabel: 'فونت نمونه',
+    fontPersianSans: 'فارسی خوانا',
+    fontSystemSans: 'ساده دستگاه',
+    fontSystemSerif: 'سنتی دستگاه',
     practiceTitle: 'این حرف را بنویس',
     practiceLetter: 'حرف',
     unlimitedTime: 'هرچقدر لازم داری وقت داری.',
@@ -79,6 +117,25 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     readyTitle: 'Ready?',
     readyBody: 'Now we will write every letter with a finger, pen, or mouse.',
     readyStart: 'Let’s start',
+    settingsTitle: 'Practice setup',
+    settingsHint: 'An adult can choose the writing guide before the activity starts.',
+    practiceModeLabel: 'Practice mode',
+    traceMode: 'Trace the sample',
+    traceModeHint: 'A faint letter appears inside the writing canvas.',
+    referenceMode: 'Sample beside canvas',
+    referenceModeHint: 'The model letter stays outside the writing area.',
+    guidelineStyleLabel: 'Guideline style',
+    guidelineNone: 'No guidelines',
+    guidelineBaseline: 'Baseline only',
+    guidelineThreeLine: 'Three writing lines',
+    guidelineGrid: 'Grid',
+    guidelineOpacityLabel: 'Guideline opacity',
+    guidelineThicknessLabel: 'Guideline thickness',
+    baselinePositionLabel: 'Baseline position',
+    sampleFontLabel: 'Sample font',
+    fontPersianSans: 'Readable Persian',
+    fontSystemSans: 'Device sans serif',
+    fontSystemSerif: 'Device serif',
     practiceTitle: 'Write this letter',
     practiceLetter: 'Letter',
     unlimitedTime: 'Take all the time you need.',
@@ -109,6 +166,25 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     readyTitle: 'Valmis?',
     readyBody: 'Kirjoitetaan jokainen kirjain sormella, kynällä tai hiirellä.',
     readyStart: 'Aloitetaan',
+    settingsTitle: 'Harjoituksen asetukset',
+    settingsHint: 'Aikuinen voi valita kirjoitusohjeen ennen harjoituksen alkua.',
+    practiceModeLabel: 'Harjoitustapa',
+    traceMode: 'Jäljitä mallia',
+    traceModeHint: 'Himmeä kirjain näkyy kirjoitusalueella.',
+    referenceMode: 'Malli alueen vieressä',
+    referenceModeHint: 'Mallikirjain näkyy erillään kirjoitusalueesta.',
+    guidelineStyleLabel: 'Apulinjojen tyyli',
+    guidelineNone: 'Ei apulinjoja',
+    guidelineBaseline: 'Vain peruslinja',
+    guidelineThreeLine: 'Kolme kirjoituslinjaa',
+    guidelineGrid: 'Ruudukko',
+    guidelineOpacityLabel: 'Apulinjojen läpinäkyvyys',
+    guidelineThicknessLabel: 'Apulinjojen paksuus',
+    baselinePositionLabel: 'Peruslinjan sijainti',
+    sampleFontLabel: 'Mallin fontti',
+    fontPersianSans: 'Selkeä persialainen',
+    fontSystemSans: 'Laitteen päätteetön',
+    fontSystemSerif: 'Laitteen päätteellinen',
     practiceTitle: 'Kirjoita tämä kirjain',
     practiceLetter: 'Kirjain',
     unlimitedTime: 'Saat käyttää niin paljon aikaa kuin tarvitset.',

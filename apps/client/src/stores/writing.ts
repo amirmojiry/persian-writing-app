@@ -3,11 +3,13 @@ import {
   completeCurrentLetter,
   createWritingSession,
   normalizeLogicalName,
+  resolveLessonSettings,
   startPractice,
   updateDraftStrokes,
   type AudioCue,
   type AudioCuePort,
   type ChildProfile,
+  type LessonSettings,
   type SessionRepository,
   type Stroke,
   type UiLocale,
@@ -24,10 +26,12 @@ interface WritingState {
   screen: FlowScreen;
   session: WritingSession | null;
   profiles: readonly ChildProfile[];
+  lessonSettings: LessonSettings;
   resumed: boolean;
   errorMessage: string | null;
 }
 
+const LESSON_SETTINGS_STORAGE_KEY = 'persian-writing-lesson-settings-v1';
 let repository: SessionRepository = createSessionRepository();
 let audioCue: AudioCuePort = new BrowserSpeechAudioCue();
 
@@ -46,6 +50,7 @@ export const useWritingStore = defineStore('writing', {
     screen: 'wizard',
     session: null,
     profiles: [],
+    lessonSettings: readSavedLessonSettings(),
     resumed: false,
     errorMessage: null
   }),
@@ -93,6 +98,18 @@ export const useWritingStore = defineStore('writing', {
       this.locale = locale;
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('persian-writing-locale', locale);
+      }
+    },
+
+    updateLessonSettings(patch: Partial<LessonSettings>): void {
+      this.lessonSettings = resolveLessonSettings({
+        userOverrides: {
+          ...this.lessonSettings,
+          ...patch
+        }
+      });
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(LESSON_SETTINGS_STORAGE_KEY, JSON.stringify(this.lessonSettings));
       }
     },
 
@@ -202,6 +219,24 @@ function readSavedLocale(): UiLocale {
   }
   const value = localStorage.getItem('persian-writing-locale');
   return value === 'en' || value === 'fi' || value === 'fa' ? value : 'fa';
+}
+
+function readSavedLessonSettings(): LessonSettings {
+  if (typeof localStorage === 'undefined') {
+    return resolveLessonSettings();
+  }
+
+  const saved = localStorage.getItem(LESSON_SETTINGS_STORAGE_KEY);
+  if (saved === null) {
+    return resolveLessonSettings();
+  }
+
+  try {
+    return resolveLessonSettings({ userOverrides: JSON.parse(saved) as Partial<LessonSettings> });
+  } catch {
+    localStorage.removeItem(LESSON_SETTINGS_STORAGE_KEY);
+    return resolveLessonSettings();
+  }
 }
 
 function createId(): string {

@@ -1,12 +1,30 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
-import type { Stroke, StrokePoint, Unsubscribe } from '@persian-writing/core';
+import {
+  applicationLessonSettings,
+  type LessonSettings,
+  type Stroke,
+  type StrokePoint,
+  type Unsubscribe
+} from '@persian-writing/core';
 import { PointerInputAdapter } from '@/adapters/input/PointerInputAdapter';
 
-const props = defineProps<{
+interface GuideSegment {
+  readonly id: string;
+  readonly x1: number;
+  readonly y1: number;
+  readonly x2: number;
+  readonly y2: number;
+  readonly baseline: boolean;
+}
+
+const props = withDefaults(defineProps<{
   letter: string;
   initialStrokes: readonly Stroke[];
-}>();
+  settings?: LessonSettings;
+}>(), {
+  settings: () => applicationLessonSettings
+});
 const emit = defineEmits<{ 'update:strokes': [strokes: readonly Stroke[]] }>();
 
 const surface = ref<HTMLElement | null>(null);
@@ -21,6 +39,13 @@ const visibleStrokes = computed<readonly Stroke[]>(() => {
   }
   return [...strokes.value, { id: 'active-stroke', points: activePoints.value }];
 });
+
+const baselineY = computed(() => Math.round(props.settings.baselinePosition * 600));
+const guideSegments = computed<readonly GuideSegment[]>(() => createGuideSegments(
+  props.settings.guidelineStyle,
+  baselineY.value
+));
+const sampleFontStack = computed(() => fontStackFor(props.settings.sampleFont));
 
 watch(
   () => [props.letter, props.initialStrokes] as const,
@@ -80,6 +105,55 @@ function pathFor(stroke: Stroke): string {
   }).join(' ');
 }
 
+function createGuideSegments(style: LessonSettings['guidelineStyle'], baseline: number): readonly GuideSegment[] {
+  if (style === 'none') {
+    return [];
+  }
+
+  const baselineSegment: GuideSegment = {
+    id: 'baseline',
+    x1: 40,
+    y1: baseline,
+    x2: 960,
+    y2: baseline,
+    baseline: true
+  };
+
+  if (style === 'baseline') {
+    return [baselineSegment];
+  }
+
+  if (style === 'three-line') {
+    const middle = Math.max(90, baseline - 145);
+    const top = Math.max(35, baseline - 290);
+    return [
+      { id: 'top', x1: 40, y1: top, x2: 960, y2: top, baseline: false },
+      { id: 'middle', x1: 40, y1: middle, x2: 960, y2: middle, baseline: false },
+      baselineSegment
+    ];
+  }
+
+  const grid: GuideSegment[] = [];
+  for (let x = 100; x < 1000; x += 100) {
+    grid.push({ id: `vertical-${x}`, x1: x, y1: 30, x2: x, y2: 570, baseline: false });
+  }
+  for (let y = 100; y < 600; y += 100) {
+    grid.push({ id: `horizontal-${y}`, x1: 40, y1: y, x2: 960, y2: y, baseline: false });
+  }
+  grid.push(baselineSegment);
+  return grid;
+}
+
+function fontStackFor(font: LessonSettings['sampleFont']): string {
+  if (font === 'system-serif') {
+    return 'Noto Naskh Arabic, Geeza Pro, Times New Roman, serif';
+  }
+  if (font === 'system-sans') {
+    return 'Tahoma, Arial, sans-serif';
+  }
+  return 'Vazirmatn, Tahoma, Arial, sans-serif';
+}
+
 function createStrokeId(): string {
   return typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
@@ -92,12 +166,42 @@ function createStrokeId(): string {
     ref="surface"
     class="writing-surface"
     data-testid="writing-surface"
+    :data-practice-mode="props.settings.practiceMode"
     role="application"
     :aria-label="`Writing canvas for ${letter}`"
   >
-    <div class="canvas-reference" aria-hidden="true">{{ letter }}</div>
-    <svg class="stroke-layer" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
-      <line x1="40" y1="430" x2="960" y2="430" class="guide-line" />
+    <div
+      v-if="props.settings.practiceMode === 'trace'"
+      class="canvas-reference"
+      data-testid="trace-reference"
+      :style="{ fontFamily: sampleFontStack }"
+      aria-hidden="true"
+    >
+      {{ letter }}
+    </div>
+    <svg
+      class="stroke-layer"
+      data-testid="guideline-layer"
+      :data-guide-style="props.settings.guidelineStyle"
+      viewBox="0 0 1000 600"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <line
+        v-for="segment in guideSegments"
+        :key="segment.id"
+        :x1="segment.x1"
+        :y1="segment.y1"
+        :x2="segment.x2"
+        :y2="segment.y2"
+        class="guide-line"
+        :class="{ baseline: segment.baseline }"
+        :style="{
+          strokeOpacity: props.settings.guidelineOpacity,
+          strokeWidth: props.settings.guidelineThickness
+        }"
+        vector-effect="non-scaling-stroke"
+      />
       <path
         v-for="stroke in visibleStrokes"
         :key="stroke.id"
