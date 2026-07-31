@@ -7,6 +7,8 @@ export interface CreateWritingSessionInput {
   readonly now: string;
 }
 
+const JOIN_CONTROL_PATTERN = /[\u200C\u200D]/u;
+
 export function normalizeLogicalName(input: string): string {
   return input
     .normalize('NFC')
@@ -18,11 +20,13 @@ export function normalizeLogicalName(input: string): string {
 
 export function segmentNameForPractice(input: string): readonly string[] {
   const normalized = normalizeLogicalName(input);
-  const segments = typeof Intl.Segmenter === 'function'
+  const graphemes = typeof Intl.Segmenter === 'function'
     ? Array.from(new Intl.Segmenter('fa', { granularity: 'grapheme' }).segment(normalized), ({ segment }) => segment)
     : Array.from(normalized);
 
-  return segments.filter((segment) => !/^\s+$/u.test(segment) && !/^[\u200C\u200D]+$/u.test(segment));
+  return graphemes
+    .flatMap((grapheme) => grapheme.split(JOIN_CONTROL_PATTERN))
+    .filter((segment) => segment.length > 0 && !/^\s+$/u.test(segment));
 }
 
 export function createWritingSession(input: CreateWritingSessionInput): WritingSession {
