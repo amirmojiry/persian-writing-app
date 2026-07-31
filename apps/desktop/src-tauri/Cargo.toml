@@ -1,6 +1,6 @@
 [package]
 name = "persian-writing-desktop"
-version = "0.2.0"
+version = "0.5.1"
 description = "Desktop shell for the Persian Name Writing App"
 authors = ["Persian Writing App contributors"]
 edition = "2021"
