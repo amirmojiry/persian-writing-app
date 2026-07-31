@@ -1,5 +1,4 @@
 import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
 
 const required = new Map([
   ['apps/desktop/src-tauri/src/database.rs', ['writing_sessions', 'find_active_session', '#[cfg(test)]']],
@@ -8,7 +7,7 @@ const required = new Map([
   ['apps/client/src/adapters/export/TauriResultDeliveryAdapter.ts', ['saveDialog', 'print_export', 'openPath']],
   ['apps/client/src/adapters/window/TauriWindowModeAdapter.ts', ['setFullscreen', 'setAlwaysOnTop']],
   ['apps/desktop/src-tauri/capabilities/default.json', ['dialog:allow-save', 'opener:allow-open-path', 'core:window:allow-set-fullscreen']],
-  ['docs/DESKTOP_RELEASES.md', ['SQLite', 'code signing', 'latest.json']],
+  ['docs/DESKTOP_RELEASES.md', ['SQLite', 'Code signing', 'latest.json']],
   ['.github/workflows/desktop.yml', ['cargo test', 'tauri-apps/tauri-action']]
 ]);
 
