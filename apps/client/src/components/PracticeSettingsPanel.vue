@@ -34,6 +34,14 @@ function setBaselinePosition(event: Event): void {
 function setSampleFont(event: Event): void {
   emit('change', { sampleFont: (event.target as HTMLSelectElement).value as SampleFont });
 }
+
+function setTimedMode(event: Event): void {
+  emit('change', { timedMode: (event.target as HTMLInputElement).checked });
+}
+
+function setTimeLimit(event: Event): void {
+  emit('change', { timeLimitSeconds: Number((event.target as HTMLInputElement).value) });
+}
 </script>
 
 <template>
@@ -75,6 +83,32 @@ function setSampleFont(event: Event): void {
     </fieldset>
 
     <div class="settings-grid">
+      <label class="setting-control timed-toggle settings-wide">
+        <span>
+          <strong>{{ message.timedModeLabel }}</strong>
+          <small>{{ message.timedModeHint }}</small>
+        </span>
+        <input
+          data-testid="timed-mode"
+          type="checkbox"
+          :checked="props.settings.timedMode"
+          @change="setTimedMode"
+        />
+      </label>
+
+      <label v-if="props.settings.timedMode" class="setting-control range-control settings-wide">
+        <span>{{ message.timeLimitLabel }}: {{ props.settings.timeLimitSeconds }} {{ message.seconds }}</span>
+        <input
+          data-testid="time-limit"
+          type="range"
+          min="5"
+          max="120"
+          step="5"
+          :value="props.settings.timeLimitSeconds"
+          @input="setTimeLimit"
+        />
+      </label>
+
       <label class="setting-control">
         <span>{{ message.guidelineStyleLabel }}</span>
         <select
