@@ -1,4 +1,9 @@
-import { getCompositionMetrics, strokeToPath, type SvgCompositionOptions } from './composition';
+import {
+  getSessionCompositionMetrics,
+  strokeToPath,
+  type SvgCompositionOptions
+} from './composition';
+import { isCumulativeWritingSession } from './layout';
 import type { WritingSession } from './types';
 
 export interface ReplaySegment {
@@ -25,16 +30,20 @@ export function createReplayPlan(
   session: WritingSession,
   options: ReplayOptions = {}
 ): ReplayPlan {
-  const metrics = getCompositionMetrics(session.graphemes.length, options);
+  const metrics = getSessionCompositionMetrics(session, options);
   const gapMs = options.gapMs ?? 120;
   const minimumStrokeMs = options.minimumStrokeMs ?? 180;
   const maximumStrokeMs = options.maximumStrokeMs ?? 1800;
+  const cumulative = isCumulativeWritingSession(session);
   let cursor = 0;
   const segments: ReplaySegment[] = [];
 
   for (const attempt of [...session.attempts].sort((left, right) => left.index - right.index)) {
     const visualIndex = session.graphemes.length - 1 - attempt.index;
-    const offsetX = metrics.margin + visualIndex * metrics.cellWidth;
+    const offsetX = cumulative
+      ? metrics.margin
+      : metrics.margin + visualIndex * metrics.cellWidth;
+    const width = cumulative ? metrics.cellWidth : metrics.cellWidth;
 
     for (const stroke of attempt.strokes) {
       const firstTime = stroke.points[0]?.t ?? 0;
@@ -47,7 +56,7 @@ export function createReplayPlan(
 
       segments.push(Object.freeze({
         id: `${attempt.index}-${stroke.id}`,
-        path: strokeToPath(stroke, offsetX, metrics.margin, metrics.cellWidth, metrics.cellHeight),
+        path: strokeToPath(stroke, offsetX, metrics.margin, width, metrics.cellHeight),
         startsAtMs: cursor,
         durationMs
       }));
