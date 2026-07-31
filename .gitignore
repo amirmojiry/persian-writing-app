@@ -1,5 +1,15 @@
 node_modules/
+.pnpm-store/
 dist/
-src-tauri/target/
-.DS_Store
+coverage/
+playwright-report/
+test-results/
 *.log
+.env
+.env.*
+!.env.example
+apps/desktop/src-tauri/target/
+apps/api/vendor/
+apps/api/bootstrap/cache/*.php
+apps/api/storage/**/*.key
+.DS_Store

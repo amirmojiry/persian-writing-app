@@ -1,0 +1,15 @@
+{
+  "name": "@persian-writing/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri",
+    "build": "tauri build",
+    "typecheck": "echo 'Rust checks run through cargo check in the desktop environment'",
+    "lint": "echo 'Rust formatting runs through cargo fmt in the desktop environment'",
+    "test": "echo 'No Rust domain behavior exists in Milestone 0'"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.5"
+  }
+}
