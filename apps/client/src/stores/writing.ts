@@ -142,7 +142,7 @@ export const useWritingStore = defineStore('writing', {
         return;
       }
       this.session = startPractice(this.session, new Date().toISOString());
-      await repository.saveSession(this.session);
+      await repository.saveSession(createPersistentSessionSnapshot(this.session));
       this.screen = 'practice';
       await this.playCue('nextLetter');
     },
@@ -152,7 +152,7 @@ export const useWritingStore = defineStore('writing', {
         return;
       }
       this.session = updateDraftStrokes(this.session, strokes, new Date().toISOString());
-      await repository.saveSession(this.session);
+      await repository.saveSession(createPersistentSessionSnapshot(this.session));
     },
 
     async completeLetter(strokes: readonly Stroke[]): Promise<void> {
@@ -160,7 +160,7 @@ export const useWritingStore = defineStore('writing', {
         return;
       }
       this.session = completeCurrentLetter(this.session, strokes, new Date().toISOString());
-      await repository.saveSession(this.session);
+      await repository.saveSession(createPersistentSessionSnapshot(this.session));
       this.screen = this.session.stage;
       await this.playCue(this.session.stage === 'result' ? 'complete' : 'nextLetter');
     },
@@ -176,6 +176,25 @@ export const useWritingStore = defineStore('writing', {
     }
   }
 });
+
+function createPersistentSessionSnapshot(session: WritingSession): WritingSession {
+  return {
+    ...session,
+    graphemes: [...session.graphemes],
+    attempts: session.attempts.map((attempt) => ({
+      ...attempt,
+      strokes: cloneStrokes(attempt.strokes)
+    })),
+    draftStrokes: cloneStrokes(session.draftStrokes)
+  };
+}
+
+function cloneStrokes(strokes: readonly Stroke[]): Stroke[] {
+  return strokes.map((stroke) => ({
+    id: stroke.id,
+    points: stroke.points.map((point) => ({ ...point }))
+  }));
+}
 
 function readSavedLocale(): UiLocale {
   if (typeof localStorage === 'undefined') {
