@@ -6,7 +6,7 @@ import { createWritingSession, startPractice } from '@persian-writing/core';
 import PracticeStep from '../src/components/PracticeStep.vue';
 
 describe('PracticeStep contextual Persian rendering', () => {
-  it('renders the initial form when the first letter joins the next letter', () => {
+  it('renders an open initial form inside the first cumulative prefix', () => {
     const ready = createWritingSession({
       id: 'session-1',
       profileId: 'profile-1',
@@ -22,11 +22,12 @@ describe('PracticeStep contextual Persian rendering', () => {
 
     expect(wrapper.find('[data-testid="writing-surface"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('حرف 1 / 3');
-    expect(wrapper.get('[data-testid="contextual-letter"]').text()).toBe('لـ');
-    expect(wrapper.get('[data-testid="contextual-letter"]').attributes('data-form')).toBe('initial');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-prefix')).toBe('ل');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-current-letter')).toBe('لـ');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-form')).toBe('initial');
   });
 
-  it('renders medial and final forms from the real neighbors in the name', async () => {
+  it('keeps medial and final contextual metadata as the prefix grows', async () => {
     const ready = createWritingSession({
       id: 'session-2',
       profileId: 'profile-1',
@@ -42,12 +43,14 @@ describe('PracticeStep contextual Persian rendering', () => {
       global: { plugins: [createPinia()] }
     });
 
-    expect(wrapper.get('[data-testid="contextual-letter"]').text()).toBe('ـتـ');
-    expect(wrapper.get('[data-testid="contextual-letter"]').attributes('data-form')).toBe('medial');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-prefix')).toBe('کت');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-current-letter')).toBe('ـتـ');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-form')).toBe('medial');
 
     session.currentIndex = 2;
     await wrapper.vm.$nextTick();
-    expect(wrapper.get('[data-testid="contextual-letter"]').text()).toBe('ـا');
-    expect(wrapper.get('[data-testid="contextual-letter"]').attributes('data-form')).toBe('final');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-prefix')).toBe('کتا');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-current-letter')).toBe('ـا');
+    expect(wrapper.get('[data-testid="practice-prefix"]').attributes('data-form')).toBe('final');
   });
 });
