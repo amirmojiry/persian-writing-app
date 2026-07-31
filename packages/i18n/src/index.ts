@@ -24,6 +24,10 @@ export interface MessageCatalog {
   readonly traceModeHint: string;
   readonly referenceMode: string;
   readonly referenceModeHint: string;
+  readonly timedModeLabel: string;
+  readonly timedModeHint: string;
+  readonly timeLimitLabel: string;
+  readonly seconds: string;
   readonly guidelineStyleLabel: string;
   readonly guidelineNone: string;
   readonly guidelineBaseline: string;
@@ -41,13 +45,32 @@ export interface MessageCatalog {
   readonly unlimitedTime: string;
   readonly next: string;
   readonly drawFirst: string;
+  readonly undo: string;
+  readonly clear: string;
+  readonly retry: string;
+  readonly timeUpTitle: string;
+  readonly timeUpBody: string;
+  readonly tryAgain: string;
   readonly resultTitle: string;
   readonly resultBody: string;
+  readonly replay: string;
   readonly print: string;
+  readonly share: string;
+  readonly preparing: string;
+  readonly downloadStarted: string;
+  readonly shareSuccess: string;
+  readonly shareFallback: string;
+  readonly exportFailed: string;
   readonly startAgain: string;
   readonly resumeNotice: string;
   readonly loading: string;
   readonly audioLabel: string;
+  readonly timerWarningCue: string;
+  readonly timeUpCue: string;
+  readonly undoCue: string;
+  readonly clearCue: string;
+  readonly retryCue: string;
+  readonly replayCue: string;
 }
 
 export const messages: Record<UiLocale, MessageCatalog> = {
@@ -75,6 +98,10 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     traceModeHint: 'حرف کم‌رنگ داخل بوم نمایش داده می‌شود.',
     referenceMode: 'نمونه کنار بوم',
     referenceModeHint: 'حرف نمونه جدا از فضای نوشتن دیده می‌شود.',
+    timedModeLabel: 'تمرین زمان‌دار',
+    timedModeHint: 'برای هر حرف یک شمارش معکوس آرام نمایش داده می‌شود.',
+    timeLimitLabel: 'زمان هر حرف',
+    seconds: 'ثانیه',
     guidelineStyleLabel: 'نوع خطوط راهنما',
     guidelineNone: 'بدون خط',
     guidelineBaseline: 'فقط خط پایه',
@@ -92,13 +119,32 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     unlimitedTime: 'هرچقدر لازم داری وقت داری.',
     next: 'حرف بعدی',
     drawFirst: 'اول یک خط بکش.',
+    undo: 'برگردان',
+    clear: 'پاک کن',
+    retry: 'از نو',
+    timeUpTitle: 'زمان این حرف تمام شد',
+    timeUpBody: 'اشکالی ندارد؛ دوباره و با آرامش امتحان کن.',
+    tryAgain: 'دوباره تلاش کن',
     resultTitle: 'اسمت را نوشتی!',
     resultBody: 'این نوشته‌ی خود توست.',
+    replay: 'بازپخش نوشتن',
     print: 'چاپ',
+    share: 'اشتراک‌گذاری',
+    preparing: 'در حال آماده‌سازی…',
+    downloadStarted: 'فایل آماده و دانلود شد.',
+    shareSuccess: 'پنجره اشتراک‌گذاری باز شد.',
+    shareFallback: 'اشتراک‌گذاری پشتیبانی نشد؛ تصویر دانلود شد.',
+    exportFailed: 'ساخت فایل ممکن نشد. دوباره تلاش کن.',
     startAgain: 'دوباره بنویس',
     resumeNotice: 'تمرین قبلی‌ات از همان‌جا ادامه پیدا کرد.',
     loading: 'در حال آماده‌سازی…',
-    audioLabel: 'پخش راهنمای صوتی'
+    audioLabel: 'پخش راهنمای صوتی',
+    timerWarningCue: 'پنج ثانیه مانده. آرام ادامه بده.',
+    timeUpCue: 'زمان تمام شد. اشکالی ندارد، دوباره تلاش کن.',
+    undoCue: 'آخرین خط برگشت.',
+    clearCue: 'صفحه پاک شد.',
+    retryCue: 'دوباره شروع می‌کنیم.',
+    replayCue: 'حالا ببین چطور اسمت را نوشتی.'
   },
   en: {
     appName: 'Persian Name Writer',
@@ -124,6 +170,10 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     traceModeHint: 'A faint letter appears inside the writing canvas.',
     referenceMode: 'Sample beside canvas',
     referenceModeHint: 'The model letter stays outside the writing area.',
+    timedModeLabel: 'Timed practice',
+    timedModeHint: 'Show a gentle countdown for each letter.',
+    timeLimitLabel: 'Time per letter',
+    seconds: 'seconds',
     guidelineStyleLabel: 'Guideline style',
     guidelineNone: 'No guidelines',
     guidelineBaseline: 'Baseline only',
@@ -141,13 +191,32 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     unlimitedTime: 'Take all the time you need.',
     next: 'Next letter',
     drawFirst: 'Draw one stroke first.',
+    undo: 'Undo',
+    clear: 'Clear',
+    retry: 'Restart',
+    timeUpTitle: 'Time is up for this letter',
+    timeUpBody: 'That is okay. Try again calmly.',
+    tryAgain: 'Try again',
     resultTitle: 'You wrote your name!',
     resultBody: 'This is your own handwriting.',
+    replay: 'Replay writing',
     print: 'Print',
+    share: 'Share',
+    preparing: 'Preparing…',
+    downloadStarted: 'Your file is ready and downloading.',
+    shareSuccess: 'The share sheet opened.',
+    shareFallback: 'Sharing is unavailable, so the image was downloaded.',
+    exportFailed: 'The file could not be created. Please try again.',
     startAgain: 'Write again',
     resumeNotice: 'Your previous activity resumed where you left it.',
     loading: 'Getting ready…',
-    audioLabel: 'Play audio guidance'
+    audioLabel: 'Play audio guidance',
+    timerWarningCue: 'Five seconds left. Keep going calmly.',
+    timeUpCue: 'Time is up. That is okay, try again.',
+    undoCue: 'The last stroke was removed.',
+    clearCue: 'The writing area is clear.',
+    retryCue: 'Let’s start this letter again.',
+    replayCue: 'Now watch how you wrote your name.'
   },
   fi: {
     appName: 'Persialaisen nimen kirjoittaja',
@@ -173,6 +242,10 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     traceModeHint: 'Himmeä kirjain näkyy kirjoitusalueella.',
     referenceMode: 'Malli alueen vieressä',
     referenceModeHint: 'Mallikirjain näkyy erillään kirjoitusalueesta.',
+    timedModeLabel: 'Ajastettu harjoitus',
+    timedModeHint: 'Näytä rauhallinen lähtölaskenta jokaiselle kirjaimelle.',
+    timeLimitLabel: 'Aika kirjainta kohti',
+    seconds: 'sekuntia',
     guidelineStyleLabel: 'Apulinjojen tyyli',
     guidelineNone: 'Ei apulinjoja',
     guidelineBaseline: 'Vain peruslinja',
@@ -190,13 +263,32 @@ export const messages: Record<UiLocale, MessageCatalog> = {
     unlimitedTime: 'Saat käyttää niin paljon aikaa kuin tarvitset.',
     next: 'Seuraava kirjain',
     drawFirst: 'Piirrä ensin yksi viiva.',
+    undo: 'Kumoa',
+    clear: 'Tyhjennä',
+    retry: 'Aloita alusta',
+    timeUpTitle: 'Tämän kirjaimen aika loppui',
+    timeUpBody: 'Ei haittaa. Yritä rauhassa uudelleen.',
+    tryAgain: 'Yritä uudelleen',
     resultTitle: 'Kirjoitit nimesi!',
     resultBody: 'Tämä on oma käsialasi.',
+    replay: 'Toista kirjoitus',
     print: 'Tulosta',
+    share: 'Jaa',
+    preparing: 'Valmistellaan…',
+    downloadStarted: 'Tiedosto on valmis ja latautuu.',
+    shareSuccess: 'Jakaminen avautui.',
+    shareFallback: 'Jakaminen ei ole käytettävissä, joten kuva ladattiin.',
+    exportFailed: 'Tiedostoa ei voitu luoda. Yritä uudelleen.',
     startAgain: 'Kirjoita uudelleen',
     resumeNotice: 'Edellinen harjoitus jatkui siitä, mihin jäit.',
     loading: 'Valmistellaan…',
-    audioLabel: 'Toista ääniohje'
+    audioLabel: 'Toista ääniohje',
+    timerWarningCue: 'Viisi sekuntia jäljellä. Jatka rauhassa.',
+    timeUpCue: 'Aika loppui. Ei haittaa, yritä uudelleen.',
+    undoCue: 'Viimeinen viiva poistettiin.',
+    clearCue: 'Kirjoitusalue tyhjennettiin.',
+    retryCue: 'Aloitetaan tämä kirjain uudelleen.',
+    replayCue: 'Katso nyt, miten kirjoitit nimesi.'
   }
 };
 

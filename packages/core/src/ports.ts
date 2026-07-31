@@ -18,7 +18,18 @@ export interface SessionRepository {
   findActiveSession(): Promise<WritingSession | null>;
 }
 
-export type AudioCue = 'wizardPrompt' | 'wizardSuccess' | 'ready' | 'nextLetter' | 'complete';
+export type AudioCue =
+  | 'wizardPrompt'
+  | 'wizardSuccess'
+  | 'ready'
+  | 'nextLetter'
+  | 'complete'
+  | 'timerWarning'
+  | 'timeUp'
+  | 'undo'
+  | 'clear'
+  | 'retry'
+  | 'replay';
 
 export interface AudioCuePort {
   play(cue: AudioCue, locale: ChildProfile['uiLocale']): Promise<void>;

@@ -22,8 +22,10 @@ const props = withDefaults(defineProps<{
   letter: string;
   initialStrokes: readonly Stroke[];
   settings?: LessonSettings;
+  disabled?: boolean;
 }>(), {
-  settings: () => applicationLessonSettings
+  settings: () => applicationLessonSettings,
+  disabled: false
 });
 const emit = defineEmits<{ 'update:strokes': [strokes: readonly Stroke[]] }>();
 
@@ -56,8 +58,18 @@ watch(
   { deep: true }
 );
 
+watch(() => props.disabled, (disabled) => {
+  if (disabled) {
+    activePoints.value = [];
+  }
+});
+
 onMounted(async () => {
   unsubscribers.push(adapter.onStrokeState((state) => {
+    if (props.disabled) {
+      activePoints.value = [];
+      return;
+    }
     if (state === 'down') {
       activePoints.value = [];
       return;
@@ -73,7 +85,9 @@ onMounted(async () => {
     }
   }));
   unsubscribers.push(adapter.onPoint((point) => {
-    activePoints.value = [...activePoints.value, { ...point }];
+    if (!props.disabled) {
+      activePoints.value = [...activePoints.value, { ...point }];
+    }
   }));
   if (surface.value !== null) {
     await adapter.start(surface.value);
@@ -166,7 +180,9 @@ function createStrokeId(): string {
     ref="surface"
     class="writing-surface"
     data-testid="writing-surface"
+    :class="{ 'is-disabled': props.disabled }"
     :data-practice-mode="props.settings.practiceMode"
+    :aria-disabled="props.disabled"
     role="application"
     :aria-label="`Writing canvas for ${letter}`"
   >
@@ -209,5 +225,6 @@ function createStrokeId(): string {
         class="child-stroke"
       />
     </svg>
+    <div v-if="props.disabled" class="canvas-disabled-overlay" aria-hidden="true">⏳</div>
   </div>
 </template>

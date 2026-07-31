@@ -16,7 +16,9 @@ describe('writing store lesson settings', () => {
       guidelineOpacity: 0.64,
       guidelineThickness: 7,
       baselinePosition: 0.8,
-      sampleFont: 'system-serif'
+      sampleFont: 'system-serif',
+      timedMode: true,
+      timeLimitSeconds: 45
     });
 
     setActivePinia(createPinia());
@@ -28,7 +30,9 @@ describe('writing store lesson settings', () => {
       guidelineOpacity: 0.64,
       guidelineThickness: 7,
       baselinePosition: 0.8,
-      sampleFont: 'system-serif'
+      sampleFont: 'system-serif',
+      timedMode: true,
+      timeLimitSeconds: 45
     });
   });
 
@@ -39,6 +43,7 @@ describe('writing store lesson settings', () => {
 
     expect(store.lessonSettings.practiceMode).toBe('trace');
     expect(store.lessonSettings.guidelineStyle).toBe('three-line');
+    expect(store.lessonSettings.timedMode).toBe(false);
     expect(localStorage.getItem('persian-writing-lesson-settings-v1')).toBeNull();
   });
 });

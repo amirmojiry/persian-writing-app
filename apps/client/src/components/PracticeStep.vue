@@ -10,6 +10,8 @@ import { createPersianPracticeUnits } from '@persian-writing/lesson-persian';
 import AudioButton from './AudioButton.vue';
 import WritingCanvas from './WritingCanvas.vue';
 import { useMessages } from '@/composables/useMessages';
+import { usePracticeTimer } from '@/composables/usePracticeTimer';
+import { useWritingStore } from '@/stores/writing';
 
 const props = withDefaults(defineProps<{
   session: WritingSession;
@@ -22,6 +24,7 @@ const emit = defineEmits<{
   next: [strokes: readonly Stroke[]];
 }>();
 const { message } = useMessages();
+const store = useWritingStore();
 const strokes = shallowRef<Stroke[]>(cloneStrokes(props.session.draftStrokes));
 const showDrawHint = ref(false);
 const practiceUnits = computed(() => createPersianPracticeUnits(props.session.logicalName));
@@ -29,6 +32,16 @@ const currentUnit = computed(() => practiceUnits.value[props.session.currentInde
 const currentLetter = computed(() => currentUnit.value?.display ?? props.session.graphemes[props.session.currentIndex] ?? '');
 const currentForm = computed(() => currentUnit.value?.form ?? 'isolated');
 const sampleFontStack = computed(() => fontStackFor(props.settings.sampleFont));
+const timedMode = computed(() => props.settings.timedMode);
+const timeLimitSeconds = computed(() => props.settings.timeLimitSeconds);
+const timerScope = computed(() => `${props.session.id}:${props.session.currentIndex}`);
+const timer = usePracticeTimer({
+  enabled: timedMode,
+  durationSeconds: timeLimitSeconds,
+  scopeKey: timerScope,
+  onWarning: () => void store.playCue('timerWarning'),
+  onExpire: () => void store.playCue('timeUp')
+});
 
 watch(
   () => props.session.currentIndex,
@@ -38,18 +51,50 @@ watch(
   }
 );
 
-function updateStrokes(value: readonly Stroke[]): void {
+function replaceStrokes(value: readonly Stroke[]): void {
   const snapshot = cloneStrokes(value);
   strokes.value = snapshot;
   showDrawHint.value = false;
   emit('save', cloneStrokes(snapshot));
 }
 
+function updateStrokes(value: readonly Stroke[]): void {
+  if (!timer.expired.value) {
+    replaceStrokes(value);
+  }
+}
+
+function undo(): void {
+  if (strokes.value.length === 0 || timer.expired.value) {
+    return;
+  }
+  replaceStrokes(strokes.value.slice(0, -1));
+  void store.playCue('undo');
+}
+
+function clear(): void {
+  if (strokes.value.length === 0 || timer.expired.value) {
+    return;
+  }
+  replaceStrokes([]);
+  void store.playCue('clear');
+}
+
+function retry(): void {
+  replaceStrokes([]);
+  timer.reset();
+  void store.playCue('retry');
+}
+
 function next(): void {
+  if (timer.expired.value) {
+    return;
+  }
   if (strokes.value.length === 0) {
     showDrawHint.value = true;
     return;
   }
+  timer.complete();
   emit('next', cloneStrokes(strokes.value));
 }
 
@@ -90,7 +135,19 @@ function fontStackFor(font: LessonSettings['sampleFont']): string {
         {{ currentLetter }}
       </div>
     </div>
-    <p class="unlimited-time">∞ {{ message.unlimitedTime }}</p>
+
+    <div v-if="props.settings.timedMode" class="timer-panel" data-testid="timer-panel">
+      <div class="timer-readout" :class="{ warning: timer.remainingSeconds.value <= 5, expired: timer.expired.value }">
+        <span aria-hidden="true">⏱️</span>
+        <strong data-testid="timer-seconds">{{ timer.remainingSeconds.value }}</strong>
+        <span>{{ message.seconds }}</span>
+      </div>
+      <div class="timer-track" role="progressbar" :aria-valuenow="Math.round(timer.progress.value * 100)" aria-valuemin="0" aria-valuemax="100">
+        <span :style="{ transform: `scaleX(${timer.progress.value})` }"></span>
+      </div>
+    </div>
+    <p v-else class="unlimited-time">∞ {{ message.unlimitedTime }}</p>
+
     <div class="practice-workspace" :data-mode="props.settings.practiceMode">
       <aside
         v-if="props.settings.practiceMode === 'reference'"
@@ -106,13 +163,32 @@ function fontStackFor(font: LessonSettings['sampleFont']): string {
       <WritingCanvas
         :key="session.currentIndex"
         :letter="currentLetter"
-        :initial-strokes="session.draftStrokes"
+        :initial-strokes="strokes"
         :settings="props.settings"
+        :disabled="timer.expired.value"
         @update:strokes="updateStrokes"
       />
     </div>
+
+    <div class="writing-tools" aria-label="Writing tools">
+      <button type="button" class="tool-button" data-testid="undo-stroke" :disabled="strokes.length === 0 || timer.expired.value" @click="undo">
+        ↶ {{ message.undo }}
+      </button>
+      <button type="button" class="tool-button" data-testid="clear-letter" :disabled="strokes.length === 0 || timer.expired.value" @click="clear">
+        ✕ {{ message.clear }}
+      </button>
+      <button type="button" class="tool-button" data-testid="retry-letter" @click="retry">
+        ↻ {{ message.retry }}
+      </button>
+    </div>
+
+    <div v-if="timer.expired.value" class="time-up-card" data-testid="time-up" role="alert">
+      <strong>{{ message.timeUpTitle }}</strong>
+      <span>{{ message.timeUpBody }}</span>
+      <button type="button" class="secondary-button compact" @click="retry">{{ message.tryAgain }}</button>
+    </div>
     <p v-if="showDrawHint" class="validation-message" role="alert">{{ message.drawFirst }}</p>
-    <button type="button" class="primary-button" data-testid="next-letter" @click="next">
+    <button type="button" class="primary-button" data-testid="next-letter" :disabled="timer.expired.value" @click="next">
       {{ message.next }}
     </button>
   </section>

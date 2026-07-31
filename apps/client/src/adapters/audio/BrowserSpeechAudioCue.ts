@@ -9,7 +9,8 @@ export class BrowserSpeechAudioCue implements AudioCuePort {
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(cueText(cue, locale));
     utterance.lang = locale === 'fa' ? 'fa-IR' : locale === 'fi' ? 'fi-FI' : 'en-US';
-    utterance.rate = 0.9;
+    utterance.rate = cue === 'timerWarning' || cue === 'timeUp' ? 0.82 : 0.9;
+    utterance.pitch = cue === 'complete' ? 1.08 : 1;
     speechSynthesis.speak(utterance);
   }
 
@@ -27,7 +28,13 @@ function cueText(cue: AudioCue, locale: UiLocale): string {
     wizardSuccess: catalog.wizardSuccess,
     ready: `${catalog.readyTitle} ${catalog.readyBody}`,
     nextLetter: catalog.practiceTitle,
-    complete: `${catalog.resultTitle} ${catalog.resultBody}`
+    complete: `${catalog.resultTitle} ${catalog.resultBody}`,
+    timerWarning: catalog.timerWarningCue,
+    timeUp: catalog.timeUpCue,
+    undo: catalog.undoCue,
+    clear: catalog.clearCue,
+    retry: catalog.retryCue,
+    replay: catalog.replayCue
   };
   return text[cue];
 }
