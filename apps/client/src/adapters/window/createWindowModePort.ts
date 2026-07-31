@@ -6,7 +6,7 @@ const unavailableWindowMode: WindowModePort = Object.freeze({
   async isKiosk(): Promise<boolean> {
     return false;
   },
-  async setKiosk(_enabled: boolean): Promise<void> {
+  async setKiosk(): Promise<void> {
     return;
   }
 });
