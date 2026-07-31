@@ -1,0 +1,16 @@
+{
+  "name": "persian-writing-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline-first Persian name writing education app",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build-web.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
