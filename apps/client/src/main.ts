@@ -4,6 +4,7 @@ import App from './App.vue';
 import router from './router';
 import './assets/main.css';
 import './assets/practice-settings.css';
+import './assets/milestone3.css';
 
 createApp(App).use(createPinia()).use(router).mount('#app');
 
