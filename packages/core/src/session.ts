@@ -8,7 +8,12 @@ export interface CreateWritingSessionInput {
 }
 
 export function normalizeLogicalName(input: string): string {
-  return input.normalize('NFC').trim().replace(/\s+/gu, ' ');
+  return input
+    .normalize('NFC')
+    .replace(/[يى]/gu, 'ی')
+    .replace(/ك/gu, 'ک')
+    .trim()
+    .replace(/\s+/gu, ' ');
 }
 
 export function segmentNameForPractice(input: string): readonly string[] {
@@ -17,7 +22,7 @@ export function segmentNameForPractice(input: string): readonly string[] {
     ? Array.from(new Intl.Segmenter('fa', { granularity: 'grapheme' }).segment(normalized), ({ segment }) => segment)
     : Array.from(normalized);
 
-  return segments.filter((segment) => !/^\s+$/u.test(segment));
+  return segments.filter((segment) => !/^\s+$/u.test(segment) && !/^[\u200C\u200D]+$/u.test(segment));
 }
 
 export function createWritingSession(input: CreateWritingSessionInput): WritingSession {
