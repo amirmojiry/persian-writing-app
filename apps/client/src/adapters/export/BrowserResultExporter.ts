@@ -1,7 +1,7 @@
 import { PDFDocument } from 'pdf-lib';
 import {
   createCompositionSvg,
-  getCompositionMetrics,
+  getSessionCompositionMetrics,
   type ResultFile,
   type ResultFileFormat,
   type WritingSession
@@ -18,7 +18,7 @@ export class BrowserResultExporter {
   }
 
   async createPngBlob(session: WritingSession): Promise<Blob> {
-    const metrics = getCompositionMetrics(session.graphemes.length, {}, session.layout);
+    const metrics = getSessionCompositionMetrics(session);
     const svg = createCompositionSvg(session);
     const source = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
     const sourceUrl = URL.createObjectURL(source);
@@ -69,7 +69,7 @@ export class BrowserResultExporter {
   }
 
   async createPdfBlob(session: WritingSession): Promise<Blob> {
-    const metrics = getCompositionMetrics(session.graphemes.length, {}, session.layout);
+    const metrics = getSessionCompositionMetrics(session);
     const png = await this.createPngBlob(session);
     const pdf = await PDFDocument.create();
     const image = await pdf.embedPng(await png.arrayBuffer());
