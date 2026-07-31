@@ -33,7 +33,7 @@ async function replay(): Promise<void> {
 
 function downloadSvg(): void {
   exporter.downloadSvg(props.session);
-  actionStatus.value = message.downloadStarted;
+  actionStatus.value = message.value.downloadStarted;
 }
 
 async function runExport(action: 'png' | 'pdf' | 'share'): Promise<void> {
@@ -42,19 +42,21 @@ async function runExport(action: 'png' | 'pdf' | 'share'): Promise<void> {
   try {
     if (action === 'png') {
       await exporter.downloadPng(props.session);
-      actionStatus.value = message.downloadStarted;
+      actionStatus.value = message.value.downloadStarted;
     } else if (action === 'pdf') {
       await exporter.downloadPdf(props.session);
-      actionStatus.value = message.downloadStarted;
+      actionStatus.value = message.value.downloadStarted;
     } else {
       const outcome = await exporter.share(props.session);
-      actionStatus.value = outcome === 'shared' ? message.shareSuccess : message.shareFallback;
+      actionStatus.value = outcome === 'shared'
+        ? message.value.shareSuccess
+        : message.value.shareFallback;
     }
   } catch (error: unknown) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       actionStatus.value = '';
     } else {
-      actionStatus.value = message.exportFailed;
+      actionStatus.value = message.value.exportFailed;
     }
   } finally {
     busyAction.value = null;
