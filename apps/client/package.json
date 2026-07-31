@@ -1,6 +1,6 @@
 {
   "name": "@persian-writing/client",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,9 @@
     "@persian-writing/i18n": "workspace:*",
     "@persian-writing/ui": "workspace:*",
     "@persian-writing/lesson-persian": "workspace:*",
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-opener": "^2.0.0",
     "pdf-lib": "^1.17.1",
     "pinia": "^2.3.1",
     "vue": "^3.5.13",
