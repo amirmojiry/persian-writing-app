@@ -36,7 +36,13 @@ const currentLetter = computed(() => currentUnit.value?.display ?? props.session
 const currentForm = computed(() => currentUnit.value?.form ?? 'isolated');
 const cumulativeLayout = computed(() => isCumulativeWritingSession(props.session));
 const practicePrefix = computed(() => getPracticePrefix(props.session));
-const practiceDisplay = computed(() => cumulativeLayout.value ? practicePrefix.value : currentLetter.value);
+const practiceGuide = computed(() => {
+  if (!cumulativeLayout.value) {
+    return currentLetter.value;
+  }
+  const hasFutureLetter = props.session.currentIndex < props.session.graphemes.length - 1;
+  return hasFutureLetter ? `${practicePrefix.value}\u200D` : practicePrefix.value;
+});
 const lockedStrokes = computed(() => getLockedPracticeStrokes(props.session));
 const sampleFontStack = computed(() => fontStackFor(props.settings.sampleFont));
 const timedMode = computed(() => props.settings.timedMode);
@@ -135,13 +141,14 @@ function fontStackFor(font: LessonSettings['sampleFont']): string {
         class="letter-bubble"
         :class="{ 'prefix-bubble': cumulativeLayout }"
         data-testid="practice-prefix"
+        :data-prefix="practicePrefix"
         :data-form="currentForm"
         :data-current-letter="currentLetter"
         :style="{ fontFamily: sampleFontStack }"
         dir="rtl"
         lang="fa"
       >
-        {{ practiceDisplay }}
+        {{ practiceGuide }}
       </div>
     </div>
 
@@ -163,16 +170,17 @@ function fontStackFor(font: LessonSettings['sampleFont']): string {
         class="reference-sample"
         :class="{ 'cumulative-reference-sample': cumulativeLayout }"
         data-testid="reference-sample"
+        :data-prefix="practicePrefix"
         :style="{ fontFamily: sampleFontStack }"
         dir="rtl"
         lang="fa"
         aria-hidden="true"
       >
-        {{ practiceDisplay }}
+        {{ practiceGuide }}
       </aside>
       <WritingCanvas
         :key="session.currentIndex"
-        :letter="practiceDisplay"
+        :letter="practiceGuide"
         :initial-strokes="strokes"
         :locked-strokes="lockedStrokes"
         :settings="props.settings"
