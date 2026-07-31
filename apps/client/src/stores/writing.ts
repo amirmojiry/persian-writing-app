@@ -142,8 +142,8 @@ export const useWritingStore = defineStore('writing', {
         return;
       }
       this.session = startPractice(this.session, new Date().toISOString());
-      await repository.saveSession(createPersistentSessionSnapshot(this.session));
       this.screen = 'practice';
+      await repository.saveSession(createPersistentSessionSnapshot(this.session));
       await this.playCue('nextLetter');
     },
 
@@ -160,8 +160,8 @@ export const useWritingStore = defineStore('writing', {
         return;
       }
       this.session = completeCurrentLetter(this.session, strokes, new Date().toISOString());
-      await repository.saveSession(createPersistentSessionSnapshot(this.session));
       this.screen = this.session.stage;
+      await repository.saveSession(createPersistentSessionSnapshot(this.session));
       await this.playCue(this.session.stage === 'result' ? 'complete' : 'nextLetter');
     },
 

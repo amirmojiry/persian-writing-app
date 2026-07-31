@@ -1,10 +1,21 @@
 import { expect, test } from '@playwright/test';
 
 async function enterName(page: import('@playwright/test').Page, name: string) {
+  const runtimeErrors: string[] = [];
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+
   await page.getByTestId('wizard-check').click();
   await page.getByTestId('name-input').fill(name);
   await page.getByTestId('confirm-name').click();
+  await expect(page.getByTestId('ready-step')).toBeVisible();
   await page.getByTestId('start-practice').click();
+
+  try {
+    await expect(page.getByTestId('practice-step')).toBeVisible({ timeout: 8_000 });
+  } catch {
+    const pageText = await page.locator('body').innerText();
+    throw new Error(`Practice did not open. Runtime errors: ${runtimeErrors.join(' | ') || 'none'}. Page: ${pageText}`);
+  }
 }
 
 async function drawStroke(page: import('@playwright/test').Page) {
