@@ -5,7 +5,7 @@ const PRECACHE = [
   "./assets/TauriWindowModeAdapter-I83EgheF.js",
   "./assets/core-RciSkj6z.js",
   "./assets/index-C-JyMGQJ.css",
-  "./assets/index-XzDRHiZd.js",
+  "./assets/index-DWJD2jEM.js",
   "./icon.svg",
   "./index.html",
   "./manifest.webmanifest"
