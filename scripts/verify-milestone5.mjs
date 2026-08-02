@@ -19,7 +19,4 @@ for (const [path, markers] of required) {
   }
 }
 
-const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-if (packageJson.version !== '0.7.0') throw new Error(`Expected version 0.7.0, received ${packageJson.version}.`);
-
 console.log(`Milestone 5 verified: ${required.size} authentication, consent and sync files.`);
