@@ -14,7 +14,6 @@ use App\Policies\AdminPolicy;
 use App\Services\AdminAuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 final class AdminController
 {
@@ -113,7 +112,7 @@ final class AdminController
     {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
-        Gate::forUser($user)->authorize('access', [AdminPolicy::class]);
+        abort_unless((new AdminPolicy())->access($user), 403);
         return $user;
     }
 }
