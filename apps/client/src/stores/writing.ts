@@ -17,6 +17,7 @@ import {
 } from '@persian-writing/core';
 import { BrowserSpeechAudioCue } from '@/adapters/audio/BrowserSpeechAudioCue';
 import { createSessionRepository } from '@/adapters/persistence/createSessionRepository';
+import { readLocalAdminSettings } from '@/services/localAdminService';
 
 export type FlowScreen = 'wizard' | 'name' | 'ready' | 'practice' | 'result';
 
@@ -57,10 +58,7 @@ export const useWritingStore = defineStore('writing', {
 
   getters: {
     currentGrapheme(state): string {
-      if (state.session === null) {
-        return '';
-      }
-      return state.session.graphemes[state.session.currentIndex] ?? '';
+      return state.session?.graphemes[state.session.currentIndex] ?? '';
     },
     progress(state): { readonly current: number; readonly total: number } {
       return {
@@ -72,9 +70,7 @@ export const useWritingStore = defineStore('writing', {
 
   actions: {
     async initialize(): Promise<void> {
-      if (this.initialized) {
-        return;
-      }
+      if (this.initialized) return;
       try {
         this.profiles = await repository.listProfiles();
         const activeSession = await repository.findActiveSession();
@@ -82,9 +78,7 @@ export const useWritingStore = defineStore('writing', {
           this.session = activeSession;
           this.screen = activeSession.stage;
           const profile = this.profiles.find((candidate) => candidate.id === activeSession.profileId);
-          if (profile !== undefined) {
-            this.locale = profile.uiLocale;
-          }
+          if (profile !== undefined) this.locale = profile.uiLocale;
           this.resumed = true;
         }
       } catch (error: unknown) {
@@ -96,21 +90,19 @@ export const useWritingStore = defineStore('writing', {
 
     setLocale(locale: UiLocale): void {
       this.locale = locale;
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('persian-writing-locale', locale);
-      }
+      if (typeof localStorage !== 'undefined') localStorage.setItem('persian-writing-locale', locale);
     },
 
     updateLessonSettings(patch: Partial<LessonSettings>): void {
-      this.lessonSettings = resolveLessonSettings({
-        userOverrides: {
-          ...this.lessonSettings,
-          ...patch
-        }
-      });
+      const userOverrides = { ...readUserLessonSettings(), ...patch };
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(LESSON_SETTINGS_STORAGE_KEY, JSON.stringify(this.lessonSettings));
+        localStorage.setItem(LESSON_SETTINGS_STORAGE_KEY, JSON.stringify(userOverrides));
       }
+      this.lessonSettings = resolveWithAdministration(userOverrides);
+    },
+
+    reloadLessonSettings(): void {
+      this.lessonSettings = readSavedLessonSettings();
     },
 
     async passWizard(): Promise<void> {
@@ -120,31 +112,16 @@ export const useWritingStore = defineStore('writing', {
 
     async submitName(input: string): Promise<void> {
       const persianName = normalizeLogicalName(input);
-      if (persianName.length === 0) {
-        return;
-      }
+      if (persianName.length === 0) return;
       const now = new Date().toISOString();
       const existing = this.profiles.find((profile) => profile.persianName === persianName);
       const profile: ChildProfile = existing === undefined
         ? {
-            id: createId(),
-            displayName: persianName,
-            persianName,
-            uiLocale: this.locale,
-            createdAt: now,
-            updatedAt: now
+            id: createId(), displayName: persianName, persianName,
+            uiLocale: this.locale, createdAt: now, updatedAt: now
           }
-        : {
-            ...existing,
-            uiLocale: this.locale,
-            updatedAt: now
-          };
-      const session = createWritingSession({
-        id: createId(),
-        profileId: profile.id,
-        logicalName: persianName,
-        now
-      });
+        : { ...existing, uiLocale: this.locale, updatedAt: now };
+      const session = createWritingSession({ id: createId(), profileId: profile.id, logicalName: persianName, now });
       await repository.saveProfile(profile);
       await repository.saveSession(session);
       this.profiles = await repository.listProfiles();
@@ -155,9 +132,7 @@ export const useWritingStore = defineStore('writing', {
     },
 
     async beginPractice(): Promise<void> {
-      if (this.session === null) {
-        return;
-      }
+      if (this.session === null) return;
       this.session = startPractice(this.session, new Date().toISOString());
       this.screen = 'practice';
       await repository.saveSession(createPersistentSessionSnapshot(this.session));
@@ -165,17 +140,13 @@ export const useWritingStore = defineStore('writing', {
     },
 
     async saveDraft(strokes: readonly Stroke[]): Promise<void> {
-      if (this.session === null || this.session.stage !== 'practice') {
-        return;
-      }
+      if (this.session === null || this.session.stage !== 'practice') return;
       this.session = updateDraftStrokes(this.session, strokes, new Date().toISOString());
       await repository.saveSession(createPersistentSessionSnapshot(this.session));
     },
 
     async completeLetter(strokes: readonly Stroke[]): Promise<void> {
-      if (this.session === null) {
-        return;
-      }
+      if (this.session === null) return;
       this.session = completeCurrentLetter(this.session, strokes, new Date().toISOString());
       this.screen = this.session.stage;
       await repository.saveSession(createPersistentSessionSnapshot(this.session));
@@ -198,45 +169,44 @@ function createPersistentSessionSnapshot(session: WritingSession): WritingSessio
   return {
     ...session,
     graphemes: [...session.graphemes],
-    attempts: session.attempts.map((attempt) => ({
-      ...attempt,
-      strokes: cloneStrokes(attempt.strokes)
-    })),
+    attempts: session.attempts.map((attempt) => ({ ...attempt, strokes: cloneStrokes(attempt.strokes) })),
     draftStrokes: cloneStrokes(session.draftStrokes)
   };
 }
 
 function cloneStrokes(strokes: readonly Stroke[]): Stroke[] {
-  return strokes.map((stroke) => ({
-    id: stroke.id,
-    points: stroke.points.map((point) => ({ ...point }))
-  }));
+  return strokes.map((stroke) => ({ id: stroke.id, points: stroke.points.map((point) => ({ ...point })) }));
 }
 
 function readSavedLocale(): UiLocale {
-  if (typeof localStorage === 'undefined') {
-    return 'fa';
-  }
+  if (typeof localStorage === 'undefined') return 'fa';
   const value = localStorage.getItem('persian-writing-locale');
   return value === 'en' || value === 'fi' || value === 'fa' ? value : 'fa';
 }
 
-function readSavedLessonSettings(): LessonSettings {
-  if (typeof localStorage === 'undefined') {
-    return resolveLessonSettings();
-  }
-
+function readUserLessonSettings(): Partial<LessonSettings> {
+  if (typeof localStorage === 'undefined') return {};
   const saved = localStorage.getItem(LESSON_SETTINGS_STORAGE_KEY);
-  if (saved === null) {
-    return resolveLessonSettings();
-  }
-
+  if (saved === null) return {};
   try {
-    return resolveLessonSettings({ userOverrides: JSON.parse(saved) as Partial<LessonSettings> });
+    return JSON.parse(saved) as Partial<LessonSettings>;
   } catch {
     localStorage.removeItem(LESSON_SETTINGS_STORAGE_KEY);
-    return resolveLessonSettings();
+    return {};
   }
+}
+
+function resolveWithAdministration(userOverrides: Partial<LessonSettings>): LessonSettings {
+  const admin = typeof localStorage === 'undefined' ? { defaults: {}, locked: [] } : readLocalAdminSettings();
+  return resolveLessonSettings({
+    administratorDefaults: admin.defaults,
+    lockedByAdministrator: admin.locked,
+    userOverrides
+  });
+}
+
+function readSavedLessonSettings(): LessonSettings {
+  return resolveWithAdministration(readUserLessonSettings());
 }
 
 function createId(): string {

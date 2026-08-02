@@ -55,11 +55,12 @@ final class AuthController
         }
 
         RateLimiter::clear($key);
-        $token = $user->createToken((string) ($data['deviceName'] ?? 'desktop'), ['sync'])->plainTextToken;
+        $abilities = $user->is_admin ? ['sync', 'admin'] : ['sync'];
+        $token = $user->createToken((string) ($data['deviceName'] ?? 'desktop'), $abilities)->plainTextToken;
 
         return response()->json([
             'token' => $token,
-            'user' => ['id' => $user->getKey(), 'email' => $user->email],
+            'user' => ['id' => $user->getKey(), 'email' => $user->email, 'isAdmin' => $user->is_admin],
         ]);
     }
 
@@ -67,7 +68,9 @@ final class AuthController
     {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
-        return response()->json(['user' => ['id' => $user->getKey(), 'email' => $user->email]]);
+        return response()->json(['user' => [
+            'id' => $user->getKey(), 'email' => $user->email, 'isAdmin' => $user->is_admin,
+        ]]);
     }
 
     public function logout(Request $request): JsonResponse

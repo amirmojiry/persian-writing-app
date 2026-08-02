@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ForwardSyncedItem;
+use App\Models\ForwardingConfig;
 use App\Models\SyncedItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +23,7 @@ final class SyncController
             'items.*.payload' => ['present', 'array'],
             'items.*.consentSnapshot' => ['required', 'array'],
             'items.*.consentSnapshot.accountSync' => ['required', 'boolean'],
+            'items.*.consentSnapshot.learningAnalytics' => ['sometimes', 'boolean'],
         ]);
 
         $userId = (string) $request->user()?->getAuthIdentifier();
@@ -35,13 +38,14 @@ final class SyncController
                 continue;
             }
 
+            /** @var SyncedItem|null $existing */
             $existing = SyncedItem::query()
                 ->where('user_id', $userId)
                 ->where('idempotency_key', $key)
-                ->exists();
+                ->first();
 
-            if (! $existing) {
-                SyncedItem::query()->create([
+            if ($existing === null) {
+                $existing = SyncedItem::query()->create([
                     'user_id' => $userId,
                     'idempotency_key' => $key,
                     'aggregate_type' => (string) $item['aggregateType'],
@@ -50,9 +54,15 @@ final class SyncController
                     'payload' => (array) $item['payload'],
                     'consent_snapshot' => $consent,
                 ]);
+                ForwardingConfig::query()->where('enabled', true)->each(
+                    static fn (ForwardingConfig $config) => ForwardSyncedItem::dispatch($config->getKey(), $existing->getKey()),
+                );
+                $status = 'accepted';
+            } else {
+                $status = 'duplicate';
             }
 
-            $outcomes[] = ['idempotencyKey' => $key, 'status' => $existing ? 'duplicate' : 'accepted'];
+            $outcomes[] = ['idempotencyKey' => $key, 'status' => $status];
         }
 
         return response()->json(['items' => $outcomes]);
