@@ -4,6 +4,7 @@ import {
   type SessionRepository,
   type WritingSession
 } from '@persian-writing/core';
+import { queueProfile, queueSession } from '@/services/syncService';
 import { isTauriRuntime } from '@/runtime/isTauriRuntime';
 import { IndexedDbSessionRepository } from './IndexedDbSessionRepository';
 import { migrateLegacyDesktopStorage } from './migrateLegacyDesktopStorage';
@@ -17,6 +18,7 @@ class LazyRuntimeSessionRepository implements SessionRepository {
 
   async saveProfile(profile: ChildProfile): Promise<void> {
     await (await this.delegate).saveProfile(profile);
+    await queueProfile(profile);
   }
 
   async listProfiles(): Promise<readonly ChildProfile[]> {
@@ -25,6 +27,7 @@ class LazyRuntimeSessionRepository implements SessionRepository {
 
   async saveSession(session: WritingSession): Promise<void> {
     await (await this.delegate).saveSession(session);
+    await queueSession(session);
   }
 
   async findSession(id: string): Promise<WritingSession | null> {
@@ -43,11 +46,7 @@ async function resolveSessionRepository(): Promise<SessionRepository> {
 
     if (typeof globalThis.indexedDB !== 'undefined') {
       const legacyRepository = new IndexedDbSessionRepository();
-      await migrateLegacyDesktopStorage(
-        legacyRepository,
-        repository,
-        safeLocalStorage()
-      );
+      await migrateLegacyDesktopStorage(legacyRepository, repository, safeLocalStorage());
     }
 
     return repository;
