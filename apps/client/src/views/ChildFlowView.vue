@@ -4,10 +4,12 @@ import DesktopModeButton from '@/components/DesktopModeButton.vue';
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
 import NameEntryStep from '@/components/NameEntryStep.vue';
 import PracticeStep from '@/components/PracticeStep.vue';
+import PrivacySyncPanel from '@/components/PrivacySyncPanel.vue';
 import ReadyStep from '@/components/ReadyStep.vue';
 import ResultStep from '@/components/ResultStep.vue';
 import WizardStep from '@/components/WizardStep.vue';
 import { useMessages } from '@/composables/useMessages';
+import { flushSync } from '@/services/syncService';
 import { useWritingStore } from '@/stores/writing';
 
 const store = useWritingStore();
@@ -15,14 +17,16 @@ const { message, direction } = useMessages();
 const online = ref(typeof navigator === 'undefined' ? true : navigator.onLine);
 const previousName = computed(() => store.profiles[0]?.persianName ?? '');
 
-function updateNetworkState(): void {
+async function updateNetworkState(): Promise<void> {
   online.value = navigator.onLine;
+  if (online.value) await flushSync();
 }
 
 onMounted(async () => {
   window.addEventListener('online', updateNetworkState);
   window.addEventListener('offline', updateNetworkState);
   await store.initialize();
+  if (online.value) await flushSync();
 });
 
 onBeforeUnmount(() => {
@@ -42,6 +46,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="header-actions">
+        <PrivacySyncPanel :locale="store.locale" />
         <DesktopModeButton />
         <LocaleSwitcher />
       </div>
