@@ -8,7 +8,14 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-/** @property int $attempts @property string $status @property CarbonImmutable|null $next_attempt_at */
+/**
+ * @property string $status
+ * @property int $attempts
+ * @property int|null $response_code
+ * @property string|null $last_error
+ * @property CarbonImmutable|null $next_attempt_at
+ * @property CarbonImmutable|null $delivered_at
+ */
 final class ForwardingDelivery extends Model
 {
     use HasUuids;
@@ -21,8 +28,10 @@ final class ForwardingDelivery extends Model
     protected function casts(): array
     {
         return [
-            'attempts' => 'integer', 'response_code' => 'integer',
-            'next_attempt_at' => 'immutable_datetime', 'delivered_at' => 'immutable_datetime',
+            'attempts' => 'integer',
+            'response_code' => 'integer',
+            'next_attempt_at' => 'immutable_datetime',
+            'delivered_at' => 'immutable_datetime',
         ];
     }
 }
