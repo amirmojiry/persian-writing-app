@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\OtpChallenge;
 use App\Models\User;
+use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -19,7 +20,10 @@ final class OtpService
     public function request(string $email, string $ip, string $device): void
     {
         $normalized = Str::lower(trim($email));
-        $code = str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+        $configuredCode = config('auth.otp_test_code');
+        $code = is_string($configuredCode)
+            ? $configuredCode
+            : str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
 
         DB::transaction(function () use ($normalized, $code, $ip, $device): void {
             OtpChallenge::query()
@@ -37,8 +41,10 @@ final class OtpService
             ]);
         });
 
-        Mail::raw("Your Persian Writing verification code is {$code}. It expires in 5 minutes.",
-            static fn ($message) => $message->to($normalized)->subject('Your verification code'));
+        Mail::raw(
+            "Your Persian Writing verification code is {$code}. It expires in 5 minutes.",
+            static fn (Message $message): Message => $message->to($normalized)->subject('Your verification code'),
+        );
     }
 
     public function verify(string $email, string $code): ?User
@@ -62,6 +68,7 @@ final class OtpService
             }
 
             $challenge->increment('attempts');
+            $challenge->refresh();
             if (! Hash::check($code, $challenge->code_hash)) {
                 if ($challenge->attempts >= 5) {
                     $challenge->forceFill(['consumed_at' => now()])->save();
@@ -70,7 +77,6 @@ final class OtpService
             }
 
             $challenge->forceFill(['consumed_at' => now()])->save();
-
             return User::query()->firstOrCreate(['email' => $normalized]);
         });
     }
