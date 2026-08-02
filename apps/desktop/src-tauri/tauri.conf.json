@@ -30,6 +30,9 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "icon": [
+      "icons/icon.png"
+    ],
     "category": "Education",
     "shortDescription": "Offline Persian name-writing practice for children"
   }
