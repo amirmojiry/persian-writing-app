@@ -58,15 +58,16 @@ it('filters session records and audits list and detail access', function (): voi
     $session = syncedSession($owner);
     syncedSession($owner)->forceFill(['payload' => ['status' => 'active']])->save();
     Sanctum::actingAs($admin, ['admin']);
+    $sessionId = (string) $session->aggregate_id;
 
     $this->getJson('/api/v1/admin/sessions?status=completed')
         ->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.aggregate_id', $session->aggregate_id);
+        ->assertJsonPath('data.0.aggregate_id', $sessionId);
 
-    $this->getJson('/api/v1/admin/sessions/'.$session->aggregate_id)
+    $this->getJson('/api/v1/admin/sessions/'.$sessionId)
         ->assertOk()
-        ->assertJsonPath('session.aggregate_id', $session->aggregate_id);
+        ->assertJsonPath('session.aggregate_id', $sessionId);
 
     expect(AdminAuditLog::query()->where('action', 'admin.sessions.list')->count())->toBe(1)
         ->and(AdminAuditLog::query()->where('action', 'admin.sessions.view')->count())->toBe(1);
