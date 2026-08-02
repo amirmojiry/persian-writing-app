@@ -1,7 +1,11 @@
-const CACHE_NAME = 'persian-writing-app-v0.5.1';
+const CACHE_NAME = 'persian-writing-app-v0.6.0';
 const PRECACHE = [
-  "./assets/index-B_GY-2VP.css",
-  "./assets/index-U14NMRQL.js",
+  "./assets/TauriResultDeliveryAdapter-DmlDVjun.js",
+  "./assets/TauriSqliteSessionRepository-ot7-y3Gt.js",
+  "./assets/TauriWindowModeAdapter-I83EgheF.js",
+  "./assets/core-RciSkj6z.js",
+  "./assets/index-B3T2WJhH.js",
+  "./assets/index-Gksr0feu.css",
   "./icon.svg",
   "./index.html",
   "./manifest.webmanifest"

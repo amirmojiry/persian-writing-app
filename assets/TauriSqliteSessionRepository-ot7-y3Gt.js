@@ -1,0 +1,1 @@
+import{i}from"./core-RciSkj6z.js";class n{async saveProfile(s){await i("save_profile",{profile:s})}async listProfiles(){return await i("list_profiles")}async saveSession(s){await i("save_session",{session:s})}async findSession(s){return await i("find_session",{id:s})}async findActiveSession(){return await i("find_active_session")}}export{n as TauriSqliteSessionRepository};
