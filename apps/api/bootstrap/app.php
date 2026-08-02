@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,9 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Milestone 0 intentionally has no authentication or product middleware.
+        $middleware->alias(['abilities' => CheckAbilities::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Use Laravel defaults until API error contracts are introduced.
     })
     ->create();

@@ -4,15 +4,16 @@ import type {
   WritingSession
 } from '@persian-writing/core';
 
-const DATABASE_NAME = 'persian-writing-app';
-const DATABASE_VERSION = 1;
-const PROFILE_STORE = 'profiles';
-const SESSION_STORE = 'sessions';
+export const CLIENT_DATABASE_NAME = 'persian-writing-app';
+export const CLIENT_DATABASE_VERSION = 2;
+export const PROFILE_STORE = 'profiles';
+export const SESSION_STORE = 'sessions';
+export const SYNC_OUTBOX_STORE = 'sync-outbox';
 
 export class IndexedDbSessionRepository implements SessionRepository {
   private databasePromise: Promise<IDBDatabase> | null = null;
 
-  constructor(private readonly databaseName = DATABASE_NAME) {}
+  constructor(private readonly databaseName = CLIENT_DATABASE_NAME) {}
 
   async saveProfile(profile: ChildProfile): Promise<void> {
     const database = await this.database();
@@ -54,14 +55,14 @@ export class IndexedDbSessionRepository implements SessionRepository {
   }
 
   private database(): Promise<IDBDatabase> {
-    this.databasePromise ??= openDatabase(this.databaseName);
+    this.databasePromise ??= openClientDatabase(this.databaseName);
     return this.databasePromise;
   }
 }
 
-function openDatabase(databaseName: string): Promise<IDBDatabase> {
+export function openClientDatabase(databaseName = CLIENT_DATABASE_NAME): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(databaseName, DATABASE_VERSION);
+    const request = indexedDB.open(databaseName, CLIENT_DATABASE_VERSION);
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(PROFILE_STORE)) {
@@ -71,6 +72,11 @@ function openDatabase(databaseName: string): Promise<IDBDatabase> {
         const store = database.createObjectStore(SESSION_STORE, { keyPath: 'id' });
         store.createIndex('status', 'status', { unique: false });
       }
+      if (!database.objectStoreNames.contains(SYNC_OUTBOX_STORE)) {
+        const store = database.createObjectStore(SYNC_OUTBOX_STORE, { keyPath: 'id' });
+        store.createIndex('state', 'state', { unique: false });
+        store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error('Unable to open IndexedDB.'));
@@ -78,14 +84,14 @@ function openDatabase(databaseName: string): Promise<IDBDatabase> {
   });
 }
 
-function requestResult<T>(request: IDBRequest<T>): Promise<T> {
+export function requestResult<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed.'));
   });
 }
 
-function transactionDone(
+export function transactionDone(
   database: IDBDatabase,
   storeName: string,
   mode: IDBTransactionMode,
