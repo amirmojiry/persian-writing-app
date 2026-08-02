@@ -8,7 +8,15 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-/** @property string $format @property array<string, mixed> $filters @property string $status @property string|null $storage_path @property CarbonImmutable|null $completed_at */
+/**
+ * @property string $format
+ * @property array<string, mixed> $filters
+ * @property string $status
+ * @property string|null $storage_path
+ * @property int $record_count
+ * @property string|null $last_error
+ * @property CarbonImmutable|null $completed_at
+ */
 final class AdminExport extends Model
 {
     use HasUuids;
@@ -20,6 +28,10 @@ final class AdminExport extends Model
 
     protected function casts(): array
     {
-        return ['filters' => 'array', 'completed_at' => 'immutable_datetime', 'record_count' => 'integer'];
+        return [
+            'filters' => 'array',
+            'completed_at' => 'immutable_datetime',
+            'record_count' => 'integer',
+        ];
     }
 }
