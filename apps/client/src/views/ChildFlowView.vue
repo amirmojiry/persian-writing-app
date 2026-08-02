@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import AdminPanel from '@/components/AdminPanel.vue';
 import DesktopModeButton from '@/components/DesktopModeButton.vue';
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
 import NameEntryStep from '@/components/NameEntryStep.vue';
@@ -46,6 +47,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="header-actions">
+        <AdminPanel :locale="store.locale" />
         <PrivacySyncPanel :locale="store.locale" />
         <DesktopModeButton />
         <LocaleSwitcher />
