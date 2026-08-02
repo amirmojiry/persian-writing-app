@@ -40,13 +40,11 @@ export class AdminApiClient {
   }
 
   private async request<T>(path: string, token: string, init: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...init,
-      headers: {
-        Accept: 'application/json', 'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`, ...init.headers
-      }
-    });
+    const headers = new Headers(init.headers);
+    headers.set('Accept', 'application/json');
+    headers.set('Content-Type', 'application/json');
+    headers.set('Authorization', `Bearer ${token}`);
+    const response = await fetch(`${this.baseUrl}${path}`, { ...init, headers });
     if (!response.ok) throw new Error(`Administration API failed with HTTP ${response.status}.`);
     return await response.json() as T;
   }
