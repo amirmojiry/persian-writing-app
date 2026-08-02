@@ -1,6 +1,6 @@
 {
   "name": "@persian-writing/desktop",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "scripts": {
     "tauri": "tauri",
@@ -10,7 +10,5 @@
     "lint": "echo 'Rust formatting checks run in the desktop workflow'",
     "test": "echo 'SQLite contract tests run in the desktop workflow'"
   },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.2.5"
-  }
+  "devDependencies": {"@tauri-apps/cli": "^2.2.5"}
 }
