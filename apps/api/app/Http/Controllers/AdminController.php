@@ -29,10 +29,18 @@ final class AdminController
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
         $query = SyncedItem::query()->where('aggregate_type', 'session')->latest();
-        if (isset($filters['status'])) $query->where('payload->status', $filters['status']);
-        if (isset($filters['profileId'])) $query->where('payload->profileId', $filters['profileId']);
-        if (isset($filters['from'])) $query->where('created_at', '>=', $filters['from']);
-        if (isset($filters['to'])) $query->where('created_at', '<=', $filters['to']);
+        if (isset($filters['status'])) {
+            $query->where('payload->status', $filters['status']);
+        }
+        if (isset($filters['profileId'])) {
+            $query->where('payload->profileId', $filters['profileId']);
+        }
+        if (isset($filters['from'])) {
+            $query->where('created_at', '>=', $filters['from']);
+        }
+        if (isset($filters['to'])) {
+            $query->where('created_at', '<=', $filters['to']);
+        }
         $page = $query->paginate((int) ($filters['perPage'] ?? 25));
         $audit->record($user, 'admin.sessions.list', 'session', null, ['filters' => $filters]);
         return response()->json($page);
@@ -57,8 +65,10 @@ final class AdminController
             'filters.to' => ['nullable', 'date'],
         ]);
         $export = AdminExport::query()->create([
-            'requested_by' => $user->getKey(), 'format' => $data['format'],
-            'filters' => $data['filters'] ?? [], 'status' => 'pending',
+            'requested_by' => $user->getKey(),
+            'format' => $data['format'],
+            'filters' => $data['filters'] ?? [],
+            'status' => 'pending',
         ]);
         BuildAdminExport::dispatch($export->getKey());
         $audit->record($user, 'admin.exports.create', 'admin_export', $export->getKey(), ['format' => $data['format']]);
@@ -79,7 +89,11 @@ final class AdminController
         $audit->record($user, 'admin.forwarding.list');
         return response()->json([
             'configs' => ForwardingConfig::query()->latest()->get(),
-            'failures' => ForwardingDelivery::query()->whereIn('status', ['failed', 'retry_scheduled'])->latest()->limit(100)->get(),
+            'failures' => ForwardingDelivery::query()
+                ->whereIn('status', ['failed', 'retry_scheduled'])
+                ->latest()
+                ->limit(100)
+                ->get(),
         ]);
     }
 
@@ -87,24 +101,43 @@ final class AdminController
     {
         $user = $this->authorize($request);
         $data = $request->validate([
-            'id' => ['nullable', 'uuid'], 'name' => ['required', 'string', 'max:100'],
+            'id' => ['nullable', 'uuid'],
+            'name' => ['required', 'string', 'max:100'],
             'endpointUrl' => ['required', 'url:http,https', 'max:2048'],
-            'secret' => ['nullable', 'string', 'max:1000'], 'enabled' => ['required', 'boolean'],
+            'secret' => ['nullable', 'string', 'max:1000'],
+            'enabled' => ['required', 'boolean'],
             'aggregateTypes' => ['required', 'array', 'min:1'],
             'aggregateTypes.*' => ['string', 'in:profile,session,event'],
             'maxAttempts' => ['required', 'integer', 'min:1', 'max:10'],
             'backoffSeconds' => ['required', 'integer', 'min:5', 'max:3600'],
         ]);
-        $config = isset($data['id']) ? ForwardingConfig::query()->findOrFail($data['id']) : new ForwardingConfig();
+
+        if (isset($data['id'])) {
+            $config = ForwardingConfig::query()->whereKey($data['id'])->firstOrFail();
+        } else {
+            $config = new ForwardingConfig();
+            $config->created_by = (string) $user->getKey();
+        }
+
         $config->fill([
-            'created_by' => $config->exists ? $config->created_by : $user->getKey(),
-            'name' => $data['name'], 'endpoint_url' => $data['endpointUrl'],
-            'enabled' => $data['enabled'], 'aggregate_types' => $data['aggregateTypes'],
-            'max_attempts' => $data['maxAttempts'], 'backoff_seconds' => $data['backoffSeconds'],
+            'name' => $data['name'],
+            'endpoint_url' => $data['endpointUrl'],
+            'enabled' => $data['enabled'],
+            'aggregate_types' => $data['aggregateTypes'],
+            'max_attempts' => $data['maxAttempts'],
+            'backoff_seconds' => $data['backoffSeconds'],
         ]);
-        if (array_key_exists('secret', $data) && $data['secret'] !== null) $config->secret = $data['secret'];
+        if (array_key_exists('secret', $data) && $data['secret'] !== null) {
+            $config->secret = $data['secret'];
+        }
         $config->save();
-        $audit->record($user, 'admin.forwarding.save', 'forwarding_config', $config->getKey(), ['enabled' => $config->enabled]);
+        $audit->record(
+            $user,
+            'admin.forwarding.save',
+            'forwarding_config',
+            $config->getKey(),
+            ['enabled' => $config->enabled],
+        );
         return response()->json(['config' => $config]);
     }
 
