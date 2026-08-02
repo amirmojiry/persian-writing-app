@@ -28,8 +28,8 @@ final class ForwardSyncedItem implements ShouldQueue
 
     public function handle(): void
     {
-        $config = ForwardingConfig::query()->findOrFail($this->configId);
-        $item = SyncedItem::query()->findOrFail($this->syncedItemId);
+        $config = ForwardingConfig::query()->whereKey($this->configId)->firstOrFail();
+        $item = SyncedItem::query()->whereKey($this->syncedItemId)->firstOrFail();
         $delivery = ForwardingDelivery::query()->firstOrCreate([
             'forwarding_config_id' => $config->getKey(),
             'synced_item_id' => $item->getKey(),
@@ -41,17 +41,21 @@ final class ForwardSyncedItem implements ShouldQueue
         }
 
         $consent = $item->consent_snapshot;
-        $eligible = ($consent['accountSync'] ?? false) === true
-            && ($item->aggregate_type !== 'event' || ($consent['learningAnalytics'] ?? false) === true);
+        $accountSync = ($consent['accountSync'] ?? false) === true;
+        $analyticsConsent = ($consent['learningAnalytics'] ?? false) === true;
+        $eligible = $accountSync && ($item->aggregate_type !== 'event' || $analyticsConsent);
         if (! $eligible) {
-            $delivery->forceFill(['status' => 'blocked_privacy', 'last_error' => 'Consent does not permit forwarding.'])->save();
+            $delivery->forceFill([
+                'status' => 'blocked_privacy',
+                'last_error' => 'Consent does not permit forwarding.',
+            ])->save();
             return;
         }
 
         $attempt = $delivery->attempts + 1;
         try {
             $request = Http::acceptJson()->timeout(15);
-            if (is_string($config->secret) && $config->secret !== '') {
+            if ($config->secret !== null && $config->secret !== '') {
                 $request = $request->withToken($config->secret);
             }
             $response = $request->post($config->endpoint_url, [
@@ -65,24 +69,28 @@ final class ForwardSyncedItem implements ShouldQueue
 
             if ($response->successful()) {
                 $delivery->forceFill([
-                    'status' => 'delivered', 'attempts' => $attempt,
-                    'response_code' => $response->status(), 'last_error' => null,
-                    'next_attempt_at' => null, 'delivered_at' => now(),
+                    'status' => 'delivered',
+                    'attempts' => $attempt,
+                    'response_code' => $response->status(),
+                    'last_error' => null,
+                    'next_attempt_at' => null,
+                    'delivered_at' => now(),
                 ])->save();
                 return;
             }
             throw new \RuntimeException('Forwarding endpoint returned HTTP '.$response->status().'.');
         } catch (\Throwable $error) {
             $failed = $attempt >= $config->max_attempts;
+            $delaySeconds = $config->backoff_seconds * $attempt;
             $delivery->forceFill([
                 'status' => $failed ? 'failed' : 'retry_scheduled',
                 'attempts' => $attempt,
                 'last_error' => $error->getMessage(),
-                'next_attempt_at' => $failed ? null : now()->addSeconds($config->backoff_seconds * $attempt),
+                'next_attempt_at' => $failed ? null : now()->addSeconds($delaySeconds),
             ])->save();
             if (! $failed) {
-                self::dispatch($config->getKey(), $item->getKey())
-                    ->delay(now()->addSeconds($config->backoff_seconds * $attempt));
+                self::dispatch((string) $config->getKey(), (string) $item->getKey())
+                    ->delay(now()->addSeconds($delaySeconds));
             }
         }
     }
