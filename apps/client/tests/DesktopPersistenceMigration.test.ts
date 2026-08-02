@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import type {
-  ChildProfile,
-  SessionRepository,
-  WritingSession
+import {
+  createWritingSession,
+  startPractice,
+  type ChildProfile,
+  type SessionRepository,
+  type WritingSession
 } from '@persian-writing/core';
 import {
   DESKTOP_SQLITE_MIGRATION_KEY,
@@ -88,18 +90,10 @@ function fixtureProfile(): ChildProfile {
 }
 
 function fixtureSession(): WritingSession {
-  return {
+  return startPractice(createWritingSession({
     id: 'session-a',
     profileId: 'profile-a',
     logicalName: 'لیا',
-    graphemes: ['ل', 'ی', 'ا'],
-    layout: 'cumulative-name',
-    stage: 'practice',
-    status: 'active',
-    currentIndex: 0,
-    attempts: [],
-    draftStrokes: [],
-    createdAt: '2026-07-31T18:00:00.000Z',
-    updatedAt: '2026-07-31T18:00:00.000Z'
-  };
+    now: '2026-07-31T18:00:00.000Z'
+  }), '2026-07-31T18:00:00.000Z');
 }
