@@ -4,8 +4,8 @@ const PRECACHE = [
   "./assets/TauriSqliteSessionRepository-ot7-y3Gt.js",
   "./assets/TauriWindowModeAdapter-I83EgheF.js",
   "./assets/core-RciSkj6z.js",
-  "./assets/index-B3T2WJhH.js",
-  "./assets/index-Gksr0feu.css",
+  "./assets/index-C-JyMGQJ.css",
+  "./assets/index-XzDRHiZd.js",
   "./icon.svg",
   "./index.html",
   "./manifest.webmanifest"
