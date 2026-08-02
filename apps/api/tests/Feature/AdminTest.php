@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
@@ -21,20 +22,21 @@ uses(RefreshDatabase::class);
 function adminUser(bool $administrator = true): User
 {
     return User::query()->create([
-        'email' => ($administrator ? 'admin' : 'user').'-'.fake()->uuid().'@example.com',
+        'email' => ($administrator ? 'admin' : 'user').'-'.Str::uuid().'@example.com',
         'is_admin' => $administrator,
     ]);
 }
 
+/** @param array<string, bool> $consent */
 function syncedSession(User $owner, array $consent = ['accountSync' => true]): SyncedItem
 {
     return SyncedItem::query()->create([
         'user_id' => $owner->getKey(),
-        'idempotency_key' => fake()->uuid(),
+        'idempotency_key' => Str::uuid(),
         'aggregate_type' => 'session',
-        'aggregate_id' => fake()->uuid(),
+        'aggregate_id' => Str::uuid(),
         'operation' => 'upsert',
-        'payload' => ['status' => 'completed', 'profileId' => fake()->uuid()],
+        'payload' => ['status' => 'completed', 'profileId' => (string) Str::uuid()],
         'consent_snapshot' => $consent,
     ]);
 }
@@ -70,7 +72,7 @@ it('filters session records and audits list and detail access', function (): voi
         ->and(AdminAuditLog::query()->where('action', 'admin.sessions.view')->count())->toBe(1);
 });
 
-it('queues large exports and builds deterministic CSV and JSON files outside the request', function (): void {
+it('queues large exports and builds deterministic CSV files outside the request', function (): void {
     Queue::fake();
     Storage::fake('local');
     $admin = adminUser();
