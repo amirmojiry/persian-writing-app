@@ -1,0 +1,43 @@
+---
+description: Core rules for the Persian name-writing application
+alwaysApply: true
+---
+
+# Source of truth
+Read `docs/PRODUCT_SPEC.md`, `docs/ARCHITECTURE.md`, the current milestone in `docs/IMPLEMENTATION_PLAN.md`, and `docs/STATUS.md`. When they conflict, stop and record the conflict rather than guessing.
+
+# Scope discipline
+- Implement one milestone or one narrowly stated task only.
+- Do not add speculative abstractions for future milestones.
+- Do not replace the selected stack without an ADR.
+- Keep offline child flow independent from Laravel.
+
+# Architecture
+- Vue SPA; no Inertia or SSR.
+- Domain logic belongs in framework-independent TypeScript packages.
+- Vue components do not import Tauri APIs or persistence libraries directly.
+- Use ports/adapters for input, storage, export, audio, sharing and synchronization.
+- Persist logical Unicode text, never Arabic presentation-form code points.
+- Treat camera light tracking as a separate `InputAdapter`, not as Pointer Events.
+
+# Quality
+- TypeScript strict mode; no unexplained `any`.
+- PHP strict types and small action/service classes.
+- Add behavior-focused tests with each change.
+- Run targeted tests, typecheck and lint before finishing.
+- Never weaken tests or coverage thresholds to make a task pass.
+- Keep migrations reversible and API changes documented.
+
+# Privacy and security
+- Local-only is the default.
+- Never upload data without an explicit eligible consent snapshot.
+- Do not persist raw camera frames by default.
+- OTP codes are hashed, short-lived, single-use, rate-limited and attempt-limited.
+- Check authorization on every admin operation.
+
+# Token efficiency
+- Inspect only relevant files.
+- State the intended file changes briefly before editing.
+- Avoid large generated output in chat; write files directly.
+- Reuse fixtures and shared contracts.
+- Finish by updating `docs/STATUS.md` with completed criteria and the next smallest task.
