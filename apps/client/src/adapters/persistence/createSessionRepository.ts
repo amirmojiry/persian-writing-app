@@ -6,6 +6,7 @@ import {
 } from '@persian-writing/core';
 import { isTauriRuntime } from '@/runtime/isTauriRuntime';
 import { IndexedDbSessionRepository } from './IndexedDbSessionRepository';
+import { migrateLegacyDesktopStorage } from './migrateLegacyDesktopStorage';
 
 export function createSessionRepository(): SessionRepository {
   return new LazyRuntimeSessionRepository();
@@ -38,10 +39,29 @@ class LazyRuntimeSessionRepository implements SessionRepository {
 async function resolveSessionRepository(): Promise<SessionRepository> {
   if (isTauriRuntime()) {
     const { TauriSqliteSessionRepository } = await import('./TauriSqliteSessionRepository');
-    return new TauriSqliteSessionRepository();
+    const repository = new TauriSqliteSessionRepository();
+
+    if (typeof globalThis.indexedDB !== 'undefined') {
+      const legacyRepository = new IndexedDbSessionRepository();
+      await migrateLegacyDesktopStorage(
+        legacyRepository,
+        repository,
+        safeLocalStorage()
+      );
+    }
+
+    return repository;
   }
 
   return typeof globalThis.indexedDB === 'undefined'
     ? new InMemorySessionRepository()
     : new IndexedDbSessionRepository();
+}
+
+function safeLocalStorage(): Storage | undefined {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return undefined;
+  }
 }
