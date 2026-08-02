@@ -32,6 +32,14 @@ export class IndexedDbSessionRepository implements SessionRepository {
     await transactionDone(database, SESSION_STORE, 'readwrite', (store) => store.put(session));
   }
 
+  async listSessions(): Promise<readonly WritingSession[]> {
+    const database = await this.database();
+    const sessions = await requestResult<WritingSession[]>(
+      database.transaction(SESSION_STORE, 'readonly').objectStore(SESSION_STORE).getAll()
+    );
+    return sessions.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+  }
+
   async findSession(id: string): Promise<WritingSession | null> {
     const database = await this.database();
     const result = await requestResult<WritingSession | undefined>(
@@ -41,13 +49,8 @@ export class IndexedDbSessionRepository implements SessionRepository {
   }
 
   async findActiveSession(): Promise<WritingSession | null> {
-    const database = await this.database();
-    const sessions = await requestResult<WritingSession[]>(
-      database.transaction(SESSION_STORE, 'readonly').objectStore(SESSION_STORE).getAll()
-    );
-    return sessions
-      .filter((session) => session.status === 'active')
-      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null;
+    const sessions = await this.listSessions();
+    return sessions.find((session) => session.status === 'active') ?? null;
   }
 
   private database(): Promise<IDBDatabase> {
