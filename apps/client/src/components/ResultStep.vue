@@ -76,7 +76,7 @@ function statusFor(
   outcome: FileDeliveryOutcome,
   action: 'save' | 'print' | 'share'
 ): string {
-  if (outcome === 'cancelled') {
+  if (outcome === 'cancelled' || action === 'print') {
     return '';
   }
   if (action === 'share') {
