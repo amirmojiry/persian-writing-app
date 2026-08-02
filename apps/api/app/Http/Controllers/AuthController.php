@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -65,12 +66,15 @@ final class AuthController
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
-        return response()->json(['user' => ['id' => $user?->getAuthIdentifier(), 'email' => $user?->email]]);
+        abort_unless($user instanceof User, 401);
+        return response()->json(['user' => ['id' => $user->getKey(), 'email' => $user->email]]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()?->currentAccessToken()?->delete();
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $user->currentAccessToken()?->delete();
         return response()->json(['message' => 'Signed out.']);
     }
 }
