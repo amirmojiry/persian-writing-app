@@ -6,6 +6,7 @@ export * from './repositories';
 export * from './session';
 export * from './settings';
 export * from './strokes';
+export * from './sync';
 export * from './types';
 
 export interface AppMetadata {
@@ -16,6 +17,6 @@ export interface AppMetadata {
 
 export const appMetadata: AppMetadata = Object.freeze({
   name: 'Persian Name Writing App',
-  version: '0.6.0',
+  version: '0.7.0',
   offlineFirst: true
 });
