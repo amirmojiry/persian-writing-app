@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { UiLocale } from '@persian-writing/core';
+import type { AdminSessionRecord } from '@persian-writing/contracts';
+import type { LessonSettings, UiLocale } from '@persian-writing/core';
 import { AdminApiClient } from '@/adapters/admin/AdminApiClient';
 import { adminMessages } from '@/i18n/adminMessages';
 import {
@@ -8,7 +9,8 @@ import {
   readLocalAdminSettings,
   saveLocalAdminSettings,
   setLocalAdminPin,
-  verifyLocalAdminPin
+  verifyLocalAdminPin,
+  type LocalAdminSettings
 } from '@/services/localAdminService';
 import { tokenStore } from '@/services/syncService';
 import { useWritingStore } from '@/stores/writing';
@@ -26,7 +28,7 @@ const settings = ref(readLocalAdminSettings());
 const timedMode = ref(settings.value.defaults.timedMode ?? false);
 const timeLimitSeconds = ref(settings.value.defaults.timeLimitSeconds ?? 30);
 const lockTimedMode = ref(settings.value.locked.includes('timedMode'));
-const cloudSessions = ref<readonly Readonly<Record<string, unknown>>[]>([]);
+const cloudSessions = ref<readonly AdminSessionRecord[]>([]);
 const endpointUrl = ref('');
 const forwardingEnabled = ref(false);
 
@@ -50,12 +52,13 @@ async function unlock(): Promise<void> {
 }
 
 function saveSettings(): void {
-  const next = {
+  const locked: readonly (keyof LessonSettings)[] = lockTimedMode.value ? ['timedMode'] : [];
+  const next: LocalAdminSettings = {
     defaults: {
       timedMode: timedMode.value,
       timeLimitSeconds: timeLimitSeconds.value
     },
-    locked: lockTimedMode.value ? ['timedMode'] as const : []
+    locked
   };
   saveLocalAdminSettings(next);
   settings.value = next;
@@ -121,6 +124,11 @@ async function saveForwarding(): Promise<void> {
     busy.value = false;
   }
 }
+
+function cloudSessionStatus(session: AdminSessionRecord): string {
+  const value = session.payload.status;
+  return typeof value === 'string' ? value : '';
+}
 </script>
 
 <template>
@@ -152,8 +160,8 @@ async function saveForwarding(): Promise<void> {
         <button type="button" :disabled="busy" @click="createExport('csv')">{{ text.exportCsv }}</button>
         <button type="button" :disabled="busy" @click="createExport('json')">{{ text.exportJson }}</button>
         <ol v-if="cloudSessions.length > 0">
-          <li v-for="session in cloudSessions" :key="String(session.id)">
-            {{ session.aggregate_id }} — {{ String((session.payload as Record<string, unknown>).status ?? '') }}
+          <li v-for="session in cloudSessions" :key="session.id">
+            {{ session.aggregate_id }} — {{ cloudSessionStatus(session) }}
           </li>
         </ol>
       </section>
