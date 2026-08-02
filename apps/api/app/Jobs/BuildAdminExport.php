@@ -24,7 +24,7 @@ final class BuildAdminExport implements ShouldQueue
 
     public function handle(): void
     {
-        $export = AdminExport::query()->findOrFail($this->exportId);
+        $export = AdminExport::query()->whereKey($this->exportId)->firstOrFail();
         $export->forceFill(['status' => 'processing', 'last_error' => null])->save();
 
         try {
@@ -41,7 +41,7 @@ final class BuildAdminExport implements ShouldQueue
             }
 
             $rows = $query->get()->map(static fn (SyncedItem $item): array => [
-                'id' => $item->getKey(),
+                'id' => (string) $item->getKey(),
                 'user_id' => $item->user_id,
                 'session_id' => $item->aggregate_id,
                 'operation' => $item->operation,
@@ -49,15 +49,18 @@ final class BuildAdminExport implements ShouldQueue
                 'consent_snapshot' => $item->consent_snapshot,
                 'created_at' => $item->created_at?->toISOString(),
             ]);
+            $rowList = array_values($rows->all());
 
             $content = $export->format === 'csv'
-                ? $this->csv($rows->all())
-                : json_encode($rows->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+                ? $this->csv($rowList)
+                : json_encode($rowList, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
             $path = 'admin-exports/'.$export->getKey().'.'.$export->format;
             Storage::disk('local')->put($path, $content);
             $export->forceFill([
-                'status' => 'completed', 'storage_path' => $path,
-                'record_count' => $rows->count(), 'completed_at' => now(),
+                'status' => 'completed',
+                'storage_path' => $path,
+                'record_count' => count($rowList),
+                'completed_at' => now(),
             ])->save();
         } catch (\Throwable $error) {
             $export->forceFill(['status' => 'failed', 'last_error' => $error->getMessage()])->save();
@@ -72,14 +75,17 @@ final class BuildAdminExport implements ShouldQueue
         if ($stream === false) {
             throw new \RuntimeException('Unable to open export buffer.');
         }
-        fputcsv($stream, ['id', 'user_id', 'session_id', 'operation', 'payload', 'consent_snapshot', 'created_at']);
+        fputcsv($stream, ['id', 'user_id', 'session_id', 'operation', 'payload', 'consent_snapshot', 'created_at'], ',', '"', '');
         foreach ($rows as $row) {
             fputcsv($stream, [
-                $row['id'], $row['user_id'], $row['session_id'], $row['operation'],
+                $row['id'],
+                $row['user_id'],
+                $row['session_id'],
+                $row['operation'],
                 json_encode($row['payload'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
                 json_encode($row['consent_snapshot'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
                 $row['created_at'],
-            ]);
+            ], ',', '"', '');
         }
         rewind($stream);
         $content = stream_get_contents($stream);
