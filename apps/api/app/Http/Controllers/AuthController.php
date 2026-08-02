@@ -74,7 +74,7 @@ final class AuthController
     {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
-        $user->currentAccessToken()?->delete();
+        $user->currentAccessToken()->delete();
         return response()->json(['message' => 'Signed out.']);
     }
 }
