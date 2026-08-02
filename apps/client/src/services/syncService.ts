@@ -1,8 +1,10 @@
 import {
+  InMemorySyncOutboxRepository,
   SyncCoordinator,
   createOutboxEntry,
   type ChildProfile,
   type ConsentSnapshot,
+  type SyncOutboxRepository,
   type WritingSession
 } from '@persian-writing/core';
 import { MemoryTokenStore } from '@/adapters/auth/AuthApiClient';
@@ -11,7 +13,9 @@ import { IndexedDbSyncOutboxRepository } from '@/adapters/sync/IndexedDbSyncOutb
 
 const CONSENT_KEY = 'persian-writing-sync-consent-v1';
 const DEVICE_KEY = 'persian-writing-device-id-v1';
-const repository = new IndexedDbSyncOutboxRepository();
+const repository: SyncOutboxRepository = typeof globalThis.indexedDB === 'undefined'
+  ? new InMemorySyncOutboxRepository()
+  : new IndexedDbSyncOutboxRepository();
 export const tokenStore = new MemoryTokenStore();
 const coordinator = new SyncCoordinator(repository, new HttpSyncTransport(() => tokenStore.get()));
 
@@ -42,10 +46,8 @@ export async function setAccountSyncConsent(enabled: boolean): Promise<ConsentSn
     accountSync: enabled,
     capturedAt: new Date().toISOString()
   };
-  localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
-  if (!enabled) {
-    await coordinator.flush({ online: true, consent, now: consent.capturedAt });
-  }
+  if (typeof localStorage !== 'undefined') localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+  if (!enabled) await coordinator.flush({ online: true, consent, now: consent.capturedAt });
   return consent;
 }
 
@@ -74,14 +76,8 @@ async function queue(
 ): Promise<void> {
   const consent = readConsent();
   await repository.save(createOutboxEntry({
-    id: crypto.randomUUID(),
-    aggregateType,
-    aggregateId,
-    operation: 'upsert',
-    payload,
-    idempotencyKey: crypto.randomUUID(),
-    consentSnapshot: consent,
-    now
+    id: crypto.randomUUID(), aggregateType, aggregateId, operation: 'upsert', payload,
+    idempotencyKey: crypto.randomUUID(), consentSnapshot: consent, now
   }));
 }
 
