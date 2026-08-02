@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue';
-import { createCompositionSvg, type WritingSession } from '@persian-writing/core';
+import {
+  createCompositionSvg,
+  type FileDeliveryOutcome,
+  type ResultFileFormat,
+  type WritingSession
+} from '@persian-writing/core';
 import AudioButton from './AudioButton.vue';
 import ResultReplay from './ResultReplay.vue';
 import { BrowserResultExporter } from '@/adapters/export/BrowserResultExporter';
+import { createResultDeliveryAdapter } from '@/adapters/export/createResultDeliveryAdapter';
 import { useMessages } from '@/composables/useMessages';
 import { useWritingStore } from '@/stores/writing';
 
@@ -12,6 +18,7 @@ const emit = defineEmits<{ restart: [] }>();
 const { message } = useMessages();
 const store = useWritingStore();
 const exporter = new BrowserResultExporter();
+const deliveryPromise = createResultDeliveryAdapter();
 const replayVisible = ref(false);
 const busyAction = ref<string | null>(null);
 const actionStatus = ref('');
@@ -20,8 +27,8 @@ const compositionUrl = computed(() => {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 });
 
-function printResult(): void {
-  window.print();
+async function printResult(): Promise<void> {
+  await deliver('print', 'pdf');
 }
 
 async function replay(): Promise<void> {
@@ -31,27 +38,29 @@ async function replay(): Promise<void> {
   void store.playCue('replay');
 }
 
-function downloadSvg(): void {
-  exporter.downloadSvg(props.session);
-  actionStatus.value = message.value.downloadStarted;
+async function downloadSvg(): Promise<void> {
+  await deliver('save', 'svg');
 }
 
 async function runExport(action: 'png' | 'pdf' | 'share'): Promise<void> {
-  busyAction.value = action;
+  if (action === 'share') {
+    await deliver('share', 'png');
+    return;
+  }
+  await deliver('save', action);
+}
+
+async function deliver(
+  action: 'save' | 'print' | 'share',
+  format: ResultFileFormat
+): Promise<void> {
+  busyAction.value = action === 'save' ? format : action;
   actionStatus.value = '';
   try {
-    if (action === 'png') {
-      await exporter.downloadPng(props.session);
-      actionStatus.value = message.value.downloadStarted;
-    } else if (action === 'pdf') {
-      await exporter.downloadPdf(props.session);
-      actionStatus.value = message.value.downloadStarted;
-    } else {
-      const outcome = await exporter.share(props.session);
-      actionStatus.value = outcome === 'shared'
-        ? message.value.shareSuccess
-        : message.value.shareFallback;
-    }
+    const file = await exporter.createFile(props.session, format);
+    const delivery = await deliveryPromise;
+    const outcome = await delivery[action](file);
+    actionStatus.value = statusFor(outcome, action);
   } catch (error: unknown) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       actionStatus.value = '';
@@ -61,6 +70,21 @@ async function runExport(action: 'png' | 'pdf' | 'share'): Promise<void> {
   } finally {
     busyAction.value = null;
   }
+}
+
+function statusFor(
+  outcome: FileDeliveryOutcome,
+  action: 'save' | 'print' | 'share'
+): string {
+  if (outcome === 'cancelled' || action === 'print') {
+    return '';
+  }
+  if (action === 'share') {
+    return outcome === 'shared' || outcome === 'opened'
+      ? message.value.shareSuccess
+      : message.value.shareFallback;
+  }
+  return message.value.downloadStarted;
 }
 </script>
 
@@ -79,14 +103,14 @@ async function runExport(action: 'png' | 'pdf' | 'share'): Promise<void> {
       <button type="button" class="primary-button" data-testid="replay-result" @click="replay">
         ▶ {{ message.replay }}
       </button>
-      <button type="button" class="secondary-button" data-testid="print-result" @click="printResult">
-        {{ message.print }}
+      <button type="button" class="secondary-button" data-testid="print-result" :disabled="busyAction !== null" @click="printResult">
+        {{ busyAction === 'print' ? message.preparing : message.print }}
       </button>
     </div>
 
     <div class="export-actions" aria-label="Export result">
-      <button type="button" class="export-button" data-testid="download-svg" @click="downloadSvg">
-        SVG
+      <button type="button" class="export-button" data-testid="download-svg" :disabled="busyAction !== null" @click="downloadSvg">
+        {{ busyAction === 'svg' ? message.preparing : 'SVG' }}
       </button>
       <button type="button" class="export-button" data-testid="download-png" :disabled="busyAction !== null" @click="runExport('png')">
         {{ busyAction === 'png' ? message.preparing : 'PNG' }}

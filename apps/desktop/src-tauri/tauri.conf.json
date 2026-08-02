@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Persian Name Writing App",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "identifier": "app.moder.persianwriting",
   "build": {
     "beforeDevCommand": "pnpm --filter @persian-writing/client dev",
@@ -12,20 +12,28 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "نام‌نویس فارسی",
         "width": 1100,
         "height": 760,
         "minWidth": 800,
         "minHeight": 600,
-        "resizable": true
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'"
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost"
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all"
+    "targets": "all",
+    "icon": [
+      "icons/icon.png"
+    ],
+    "category": "Education",
+    "shortDescription": "Offline Persian name-writing practice for children"
   }
 }

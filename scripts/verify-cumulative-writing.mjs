@@ -21,8 +21,10 @@ for (const [path, needles] of required) {
 }
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-if (packageJson.version !== '0.5.1') {
-  throw new Error(`Expected cumulative-writing hotfix version 0.5.1, received ${packageJson.version}.`);
+const [major, minor, patch] = packageJson.version.split('.').map(Number);
+const supportsCumulativeWriting = major > 0 || minor > 5 || (minor === 5 && patch >= 1);
+if (!supportsCumulativeWriting) {
+  throw new Error(`Expected cumulative writing in version 0.5.1 or newer, received ${packageJson.version}.`);
 }
 
 const presentationForm = /[\uFB50-\uFDFF\uFE70-\uFEFF]/u;

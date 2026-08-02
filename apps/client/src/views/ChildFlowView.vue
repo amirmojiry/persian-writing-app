@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import DesktopModeButton from '@/components/DesktopModeButton.vue';
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
 import NameEntryStep from '@/components/NameEntryStep.vue';
 import PracticeStep from '@/components/PracticeStep.vue';
@@ -40,7 +41,10 @@ onBeforeUnmount(() => {
           <small :class="{ offline: !online }">● {{ message.offlineReady }}</small>
         </div>
       </div>
-      <LocaleSwitcher />
+      <div class="header-actions">
+        <DesktopModeButton />
+        <LocaleSwitcher />
+      </div>
     </header>
 
     <div v-if="store.resumed" class="resume-banner" role="status">

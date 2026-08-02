@@ -1,13 +1,16 @@
 {
   "name": "@persian-writing/desktop",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "tauri": "tauri",
     "build": "tauri build",
-    "typecheck": "echo 'Rust checks run through cargo check in the desktop environment'",
-    "lint": "echo 'Rust formatting runs through cargo fmt in the desktop environment'",
-    "test": "echo 'The shared client and IndexedDB run unchanged in the desktop WebView'"
+    "check:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check && cargo check --manifest-path src-tauri/Cargo.toml && cargo test --manifest-path src-tauri/Cargo.toml",
+    "typecheck": "echo 'Rust type checks run in the desktop workflow'",
+    "lint": "echo 'Rust formatting checks run in the desktop workflow'",
+    "test": "echo 'SQLite contract tests run in the desktop workflow'"
   },
-  "devDependencies": { "@tauri-apps/cli": "^2.2.5" }
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.5"
+  }
 }

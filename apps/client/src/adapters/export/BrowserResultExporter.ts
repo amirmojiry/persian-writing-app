@@ -2,12 +2,21 @@ import { PDFDocument } from 'pdf-lib';
 import {
   createCompositionSvg,
   getSessionCompositionMetrics,
+  type ResultFile,
+  type ResultFileFormat,
   type WritingSession
 } from '@persian-writing/core';
 
-export type ShareOutcome = 'shared' | 'downloaded';
-
 export class BrowserResultExporter {
+  createSvgFile(session: WritingSession): ResultFile {
+    return Object.freeze({
+      name: this.fileName(session, 'svg'),
+      mimeType: 'image/svg+xml;charset=utf-8',
+      format: 'svg',
+      bytes: new TextEncoder().encode(createCompositionSvg(session))
+    });
+  }
+
   async createPngBlob(session: WritingSession): Promise<Blob> {
     const metrics = getSessionCompositionMetrics(session);
     const svg = createCompositionSvg(session);
@@ -50,6 +59,15 @@ export class BrowserResultExporter {
     }
   }
 
+  async createPngFile(session: WritingSession): Promise<ResultFile> {
+    return Object.freeze({
+      name: this.fileName(session, 'png'),
+      mimeType: 'image/png',
+      format: 'png',
+      bytes: new Uint8Array(await (await this.createPngBlob(session)).arrayBuffer())
+    });
+  }
+
   async createPdfBlob(session: WritingSession): Promise<Blob> {
     const metrics = getSessionCompositionMetrics(session);
     const png = await this.createPngBlob(session);
@@ -68,57 +86,29 @@ export class BrowserResultExporter {
     return new Blob([copy.buffer], { type: 'application/pdf' });
   }
 
-  downloadSvg(session: WritingSession): void {
-    this.downloadBlob(
-      new Blob([createCompositionSvg(session)], { type: 'image/svg+xml;charset=utf-8' }),
-      this.fileName(session, 'svg')
-    );
+  async createPdfFile(session: WritingSession): Promise<ResultFile> {
+    return Object.freeze({
+      name: this.fileName(session, 'pdf'),
+      mimeType: 'application/pdf',
+      format: 'pdf',
+      bytes: new Uint8Array(await (await this.createPdfBlob(session)).arrayBuffer())
+    });
   }
 
-  async downloadPng(session: WritingSession): Promise<void> {
-    this.downloadBlob(await this.createPngBlob(session), this.fileName(session, 'png'));
-  }
-
-  async downloadPdf(session: WritingSession): Promise<void> {
-    this.downloadBlob(await this.createPdfBlob(session), this.fileName(session, 'pdf'));
-  }
-
-  async share(session: WritingSession): Promise<ShareOutcome> {
-    const png = await this.createPngBlob(session);
-    const file = new File([png], this.fileName(session, 'png'), { type: 'image/png' });
-    const shareData: ShareData = {
-      title: session.logicalName,
-      text: session.logicalName,
-      files: [file]
-    };
-
-    if (typeof navigator.share === 'function'
-      && (typeof navigator.canShare !== 'function' || navigator.canShare(shareData))) {
-      await navigator.share(shareData);
-      return 'shared';
+  async createFile(session: WritingSession, format: ResultFileFormat): Promise<ResultFile> {
+    if (format === 'svg') {
+      return this.createSvgFile(session);
     }
-
-    this.downloadBlob(png, file.name);
-    return 'downloaded';
+    return format === 'png'
+      ? await this.createPngFile(session)
+      : await this.createPdfFile(session);
   }
 
-  fileName(session: WritingSession, extension: 'svg' | 'png' | 'pdf'): string {
+  fileName(session: WritingSession, extension: ResultFileFormat): string {
     const safeName = session.logicalName
       .normalize('NFC')
       .replace(/[\\/:*?"<>|\s]+/gu, '-')
       .replace(/^-+|-+$/gu, '') || 'persian-name';
     return `${safeName}-writing.${extension}`;
-  }
-
-  private downloadBlob(blob: Blob, fileName: string): void {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.rel = 'noopener';
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 }

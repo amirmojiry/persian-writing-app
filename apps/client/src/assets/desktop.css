@@ -1,0 +1,53 @@
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .65rem;
+}
+
+.desktop-mode-button {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  padding: .45rem .8rem;
+  border: 1px solid rgba(79, 70, 229, .2);
+  border-radius: 999px;
+  color: #4338ca;
+  background: rgba(255, 255, 255, .82);
+  cursor: pointer;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(49, 46, 129, .08);
+}
+
+.desktop-mode-button[aria-pressed="true"] {
+  color: white;
+  background: #4338ca;
+}
+
+.desktop-mode-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+@media (max-width: 720px) {
+  .header-actions {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+
+  .desktop-mode-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .desktop-mode-button {
+    min-width: 2.9rem;
+    padding-inline: .65rem;
+  }
+}

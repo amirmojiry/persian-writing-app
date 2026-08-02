@@ -18,6 +18,30 @@ export interface SessionRepository {
   findActiveSession(): Promise<WritingSession | null>;
 }
 
+export type ResultFileFormat = 'svg' | 'png' | 'pdf';
+
+export interface ResultFile {
+  readonly name: string;
+  readonly mimeType: string;
+  readonly format: ResultFileFormat;
+  readonly bytes: Uint8Array;
+}
+
+export type FileDeliveryOutcome = 'saved' | 'cancelled' | 'shared' | 'opened' | 'printed';
+
+export interface ResultDeliveryPort {
+  readonly runtime: 'browser' | 'desktop';
+  save(file: ResultFile): Promise<FileDeliveryOutcome>;
+  print(file: ResultFile): Promise<FileDeliveryOutcome>;
+  share(file: ResultFile): Promise<FileDeliveryOutcome>;
+}
+
+export interface WindowModePort {
+  readonly available: boolean;
+  isKiosk(): Promise<boolean>;
+  setKiosk(enabled: boolean): Promise<void>;
+}
+
 export type AudioCue =
   | 'wizardPrompt'
   | 'wizardSuccess'
