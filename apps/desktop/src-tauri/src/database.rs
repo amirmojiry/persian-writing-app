@@ -22,7 +22,7 @@ impl Database {
         let connection = self.connection()?;
         connection
             .execute(
-                "INSERT INTO profiles (id, updated_at, payload) VALUES (?1, ?2, ?3)\n                 ON CONFLICT(id) DO UPDATE SET updated_at = excluded.updated_at, payload = excluded.payload",
+                "INSERT INTO profiles (id, updated_at, payload) VALUES (?1, ?2, ?3)\n                 ON CONFLICT(id) DO UPDATE SET updated_at = excluded.updated_at, payload = excluded.payload\n                 WHERE excluded.updated_at >= profiles.updated_at",
                 params![id, updated_at, payload],
             )
             .map_err(error_string)?;
@@ -49,7 +49,7 @@ impl Database {
         let connection = self.connection()?;
         connection
             .execute(
-                "INSERT INTO writing_sessions (id, status, updated_at, payload) VALUES (?1, ?2, ?3, ?4)\n                 ON CONFLICT(id) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at, payload = excluded.payload",
+                "INSERT INTO writing_sessions (id, status, updated_at, payload) VALUES (?1, ?2, ?3, ?4)\n                 ON CONFLICT(id) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at, payload = excluded.payload\n                 WHERE excluded.updated_at >= writing_sessions.updated_at",
                 params![id, status, updated_at, payload],
             )
             .map_err(error_string)?;
@@ -214,6 +214,30 @@ mod tests {
                 .expect("active exists")["id"],
             "session-active"
         );
+    }
+
+    #[test]
+    fn migration_does_not_replace_newer_sqlite_snapshots() {
+        let database = database();
+        let newer = json!({
+            "id": "session-a",
+            "status": "active",
+            "updatedAt": "2026-08-02T09:00:00.000Z"
+        });
+        let older = json!({
+            "id": "session-a",
+            "status": "completed",
+            "updatedAt": "2026-07-31T09:00:00.000Z"
+        });
+        database.save_session(&newer).expect("newer snapshot");
+        database.save_session(&older).expect("legacy snapshot");
+
+        let stored = database
+            .find_session("session-a")
+            .expect("query succeeds")
+            .expect("session exists");
+        assert_eq!(stored["status"], "active");
+        assert_eq!(stored["updatedAt"], "2026-08-02T09:00:00.000Z");
     }
 
     #[test]
